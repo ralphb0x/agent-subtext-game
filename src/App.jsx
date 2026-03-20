@@ -646,6 +646,23 @@ export default function App() {
       return
     }
 
+    const newDaysLeft = Math.max(0, run.resources.daysLeft - 1)
+
+    // Check for time deportation
+    if (newDaysLeft <= 0) {
+      setRun(prev => ({
+        ...prev,
+        currentStopIdx: nextStopIdx,
+        resources: { ...prev.resources, daysLeft: 0 },
+      }))
+      setDeportGlitch(true)
+      setTimeout(() => {
+        setDeportGlitch(false)
+        setPhase(PHASE.ENDING)
+      }, 500)
+      return
+    }
+
     setRun(prev => ({
       ...prev,
       currentStopIdx: nextStopIdx,
@@ -654,7 +671,7 @@ export default function App() {
       recurringDoneThisStop: false,
       resources: {
         ...prev.resources,
-        daysLeft: Math.max(0, prev.resources.daysLeft - 1),
+        daysLeft: newDaysLeft,
       },
     }))
   }, [run])
@@ -693,8 +710,8 @@ export default function App() {
       }
     }))
 
-    // Check for deportation
-    if (newHeat >= 10) {
+    // Check for deportation (Heat 10 or Time 0)
+    if (newHeat >= 10 || run.resources.daysLeft <= 0) {
       setDeportGlitch(true)
       setTimeout(() => {
         setDeportGlitch(false)
@@ -868,12 +885,14 @@ export default function App() {
 
     // Apply resource effects
     const effects = currentEvent.resource_effects || {}
+    const newDaysLeft = Math.max(0, run.resources.daysLeft + (effects.time || 0))
+    const newHeatFromEvent = Math.min(10, Math.max(0, run.resources.heat + (effects.heat || 0)))
     const updates = {
       currentEventIdx: run.currentEventIdx + 1,
       resources: {
         money: run.resources.money + (effects.money || 0),
-        daysLeft: Math.max(0, run.resources.daysLeft + (effects.time || 0)),
-        heat: Math.min(10, Math.max(0, run.resources.heat + (effects.heat || 0))),
+        daysLeft: newDaysLeft,
+        heat: newHeatFromEvent,
         energy: Math.min(10, Math.max(0, run.resources.energy + (effects.energy || 0))),
       }
     }
@@ -885,6 +904,17 @@ export default function App() {
 
     setRun(prev => ({ ...prev, ...updates, intelCollected: updates.intelCollected || prev.intelCollected }))
     setCurrentEvent(null)
+
+    // Check for deportation from event effects (heat 10 or time 0)
+    if (newHeatFromEvent >= 10 || newDaysLeft <= 0) {
+      setDeportGlitch(true)
+      setTimeout(() => {
+        setDeportGlitch(false)
+        setPhase(PHASE.ENDING)
+      }, 500)
+      return
+    }
+
     setPhase(PHASE.PLAYING)
   }, [currentEvent, run])
 
