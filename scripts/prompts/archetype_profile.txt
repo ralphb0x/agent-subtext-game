@@ -1,0 +1,54 @@
+You are generating the 12 NPC archetype base profiles for subtext.game — a browser-based ASCII roguelike where a migrant navigates NPCs by reading subtext.
+
+Generate all 12 archetype profiles as a JSON array. Each archetype defines a behavioral pattern that NPCs will be instantiated from.
+
+```json
+{
+  "archetype_id": "string (kebab-case: 'control-seeking', 'lonely', etc.)",
+  "name": "string (display name: 'Control-Seeking', 'Lonely', etc.)",
+  "core_need": "string",
+  "rewards": ["list of player behaviors that build rapport"],
+  "punishes": ["list of player behaviors that raise suspicion"],
+  "emotional_states": {
+    "neutral": "description of baseline behavior",
+    "suspicious": "description of how they act when suspicious",
+    "hostile": "description of hostile state",
+    "cooperative": "description of cooperative state"
+  },
+  "state_transitions": {
+    "neutral_to_suspicious": "what triggers this transition",
+    "neutral_to_cooperative": "what triggers this transition",
+    "suspicious_to_hostile": "what triggers this transition",
+    "suspicious_to_cooperative": "what can recover this",
+    "cooperative_to_neutral": "what causes regression"
+  },
+  "signal_categories": ["which of the 10 signal categories this archetype primarily reveals"],
+  "reception_language_affinity": "which of the 7 reception languages this archetype most responds to",
+  "dialogue_tone": "description of how this archetype speaks — cadence, vocabulary, tics",
+  "tell_behavior": "the subtle behavioral tell that reveals their true state (e.g., 'repeats your last phrase when losing control')",
+  "ascii_portrait_notes": "visual description for ASCII art generation — distinctive features, posture, accessories"
+}
+```
+
+THE 12 ARCHETYPES:
+1. Control-Seeking — Core need: Dominance. Rewards deference/stillness/documentation. Punishes challenge/humor/emotion.
+2. Lonely — Core need: Connection. Rewards warmth/listening/personal questions. Punishes brevity/formality/rushing.
+3. Greedy — Core need: Gain. Rewards offers/incentives/explicit value. Punishes empty hands/vague promises.
+4. Paranoid — Core need: Certainty. Rewards documentation/consistency/stillness. Punishes vagueness/emotion/spontaneity.
+5. Bored — Core need: Stimulation. Rewards entertainment/novelty/humor. Punishes routine answers/compliance.
+6. Ideological — Core need: Validation. Rewards agreement/shared values/alignment. Punishes challenge/nuance/complexity.
+7. Guilty — Core need: Absolution. Rewards non-judgment/empathy/discretion. Punishes accusation/pressure/directness.
+8. Ambitious — Core need: Status. Rewards flattery/recognition/success association. Punishes indifference/dismissal.
+9. Burned Out — Core need: Ease. Rewards brevity/simplicity/zero demands. Punishes complexity/neediness/emotion.
+10. Suspicious — Core need: Proof. Rewards evidence/receipts/verifiable claims. Punishes emotional appeals/vague assurances.
+11. Empathetic — Core need: Story. Rewards vulnerability/honesty/shared humanity. Punishes deflection/walls/performance.
+12. Corrupt — Core need: Deniability. Rewards indirection/hints/plausible cover. Punishes explicit asks/direct negotiation.
+
+QUALITY RULES:
+- Each archetype must feel distinct in how they speak, react, and reveal themselves
+- Signal categories should be the ones most visible when interacting with this archetype
+- Tell behaviors should be subtle enough to miss but observable if you know what to look for
+- Emotional state descriptions should be specific behavioral changes, not abstract labels
+- State transitions should describe specific player actions, not vague categories
+
+Return ONLY the JSON array. No commentary, no markdown fences.

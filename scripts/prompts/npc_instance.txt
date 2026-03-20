@@ -1,0 +1,71 @@
+You are generating NPC instances for subtext.game — a browser-based ASCII roguelike where a migrant reads subtext in conversations to survive.
+
+Generate {batch_size} NPC instances as a JSON array. Each NPC is an instantiation of an archetype with specific flavor, full dialogue tree, and co-authored AWG analysis.
+
+IMPORTANT: The dialogue and AWG analysis MUST be generated together in the same pass. The AWG analysis references the exact dialogue it annotates.
+
+Each NPC follows this schema:
+
+```json
+{
+  "npc_id": "npc-XXXX",
+  "archetype_id": "string (one of the 12 archetypes)",
+  "name": "string",
+  "role": "string (specific role: 'bus station ticket clerk', 'motel night manager', 'ICE field agent')",
+  "location_type": "border|transit|mid_america|nyc_outer|coney_island",
+  "appearance": "string (2-3 sentences, physical details for ASCII portrait variation)",
+  "motivation": "string (absurd but specific — 'convinced the lunch special is being stolen by someone in accounting')",
+  "secret": "string (discoverable truth that grants +1 AWG token if found)",
+  "dialogue_tree": [
+    {
+      "node_id": "string",
+      "emotional_state": "neutral|suspicious|hostile|cooperative",
+      "trigger_condition": "string (what causes this node to activate — 'initial_greeting', 'rapport >= 3', 'showed_documentation', etc.)",
+      "npc_line": "string (what the NPC says — must sound like THIS specific person, not a category)",
+      "narrator_line": "string|null (deadpan one-sentence observation, slightly absurd. null if none needed)",
+      "options": [
+        {
+          "text": "string (what the player says — language skill affects phrasing)",
+          "tags": {
+            "tone": "string (deferential|warm|direct|humorous|formal|vulnerable|indirect)",
+            "intent": "string (comply|connect|negotiate|deflect|challenge|reveal|observe)",
+            "register": "string (broken|simple|standard|formal|fluent)"
+          },
+          "rapport_delta": "number (-2 to +2)",
+          "suspicion_delta": "number (-2 to +2)",
+          "next_node": "string (node_id to transition to)",
+          "requires_language_skill": "number|null (minimum skill to unlock this option)",
+          "requires_occupation": "string|null (occupation keyword that unlocks this option)",
+          "requires_intel": "string|null (intel item ID that unlocks this option)"
+        }
+      ],
+      "awg": {
+        "gap_category": "string (one of: timing, length, punctuation, word_choice, absence, topic_architecture, overcorrection, sequence, mirror, consistency)",
+        "surface": "string (quotes the EXACT NPC words that contain the signal — not a paraphrase)",
+        "actual": "string (the specific emotional truth beneath the surface — not an archetype description)",
+        "tell": "string (the observable behavioral tell in this moment)",
+        "recommendation": "string (what a skilled reader would do here)",
+        "bridge_line": "string (connects to real life: 'This is how your [specific relationship type] works too.' — name a specific relationship, not 'someone in your life')",
+        "closer": "string (one-line AWG product connection)"
+      }
+    }
+  ]
+}
+```
+
+ARCHETYPE FOR THIS BATCH: {archetype_id}
+LOCATION TYPE: {location_type}
+
+QUALITY RULES:
+- NPC dialogue: every line sounds like a specific human in a specific moment, NOT a category
+- AWG `surface` field: quotes exact NPC words, not paraphrases
+- AWG `actual` field: specific emotional truth, not archetype description ("she's testing whether you'll fight back because the last three people did" not "she needs control")
+- AWG bridge lines: name a specific real-life relationship type ("your mother-in-law", "your team lead", "your college roommate"), not "someone in your life"
+- Narrator lines: deadpan, one sentence, observational, slightly absurd. Never explanatory. ("The clock behind her has been wrong since 2019." not "She seems nervous.")
+- Motivation: absurd but treated completely seriously. Specific detail.
+- Options: include at least one option per node that requires language_skill >= 3 or a specific occupation/intel
+- Each NPC should have 6-10 dialogue nodes covering neutral→suspicious→hostile and neutral→cooperative paths
+- The secret should be discoverable through specific dialogue choices, not just given
+- Comedy is situational — the NPC is never the butt of the joke
+
+Return ONLY the JSON array. No commentary, no markdown fences.

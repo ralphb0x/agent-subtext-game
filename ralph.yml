@@ -1,0 +1,72 @@
+event_loop:
+  persistent: false
+  max_iterations: 10000
+  max_runtime_seconds: 604800       # 7 days
+  max_cost_usd: 250.0              # large build — content gen + full game engine + polish
+  cooldown_delay_seconds: 10
+  starting_event: work.start
+
+cli:
+  backend: claude
+
+core:
+  guardrails:
+    - "Fresh context each iteration — re-read CLAUDE.md and current state before doing work."
+    - "Follow the build order: Phase 1 (Content) → Phase 2 (Engine) → Phase 3 (Polish) → Phase 4 (Launch). Do not skip ahead."
+    - "All NPC dialogue and AWG analysis must be co-generated in the same pass — never separately."
+    - "Zero runtime API calls during gameplay (except email capture). Everything precomputed."
+    - "Tone is chaotic/funny/deadpan. Comedy is situational — never at the character's expense. Broken English narrated with dignity."
+    - "The correct answer is never universal — it depends on the NPC archetype. No dominant strategy exists."
+    - "Failure is interesting. Deportation screens are worth reading. Death is comedy."
+    - "Validate all generated JSON against the schemas in CLAUDE.md before moving on."
+    - "Commit after each meaningful piece of work. Push to origin."
+    - "Create GitHub issues for each build phase, major task, and content batch. Close them when done."
+    - "Confidence protocol: >80 proceed; 50-80 proceed + note; <50 safe default + note."
+
+hats:
+  builder:
+    name: "Subtext Game Builder"
+    description: "Builds subtext.game — a browser ASCII roguelike conversation game and Are We Good conversion funnel — through phased content generation and game engine implementation"
+    triggers: ["work.start"]
+    publishes: ["work.start", "LOOP_COMPLETE"]
+    default_publishes: "work.start"
+    instructions: |
+      You are a continuously running autonomous agent building subtext.game.
+      Read CLAUDE.md for your role, build order, and rules.
+      Do one iteration of useful work.
+
+      DEFINITION OF DONE — READ THIS CAREFULLY:
+      Your job is to BUILD THE GAME. Your job is NOT to play it, market it,
+      write blog posts about it, or do ongoing content updates. Running the
+      game happens on Vercel after deployment.
+
+      The build is DONE when:
+      - Content pipeline generates valid JSON for all content types (characters, NPCs, dialogue, AWG analysis, intel, locations, recurring chars, endings)
+      - At least 1,000 character profiles generated and validated
+      - At least 100 NPC instances with full dialogue trees + AWG analysis generated and validated
+      - 5 recurring character arcs authored with full dialogue banks
+      - 30 intel items with synergy matrix generated
+      - React game engine runs a complete playthrough: character assignment → NPC encounters → dialogue choices → resource management → AWG tokens → gap tracking → ending screen
+      - Procedural engine assembles runs from JSON with seeded RNG
+      - Dialogue state machine handles all archetype interactions correctly
+      - AWG token system works: activation, analysis display, token economy, depletion gate with email capture
+      - Terminal ASCII aesthetic implemented: monospace, black background, portraits, UI bar
+      - All 5 animation moments working (boot sequence, heat bar, AWG scan, deportation glitch, win state)
+      - Share card generation working
+      - Ending screen renders all 6 variants with gap data
+      - Game deployed to Vercel and accessible
+      - All code committed and pushed
+
+      If ALL of the above are true, emit LOOP_COMPLETE immediately.
+      Do NOT keep looping to generate more content, tweak copy, or do
+      operational work. That is not your job.
+
+      Each iteration:
+      1. Read CLAUDE.md and assess current project state (what's built, what's next).
+      2. Check the definition of done above. If everything is built, emit LOOP_COMPLETE.
+      3. If something is genuinely not built yet, identify the next concrete task in the current phase.
+      4. Implement it — write code, generate content, build scripts as needed.
+      5. Verify your work (validate JSON, run the app, test the feature).
+      6. Commit with a clear message. Push to origin.
+      7. Create or update GitHub issues to track progress.
+      8. Re-check definition of done. If complete, emit LOOP_COMPLETE.

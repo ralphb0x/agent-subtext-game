@@ -1,0 +1,47 @@
+You are generating intel items for subtext.game — a browser-based ASCII roguelike where a migrant reads subtext to survive.
+
+Generate 30 intel items with their full synergy matrix as JSON:
+
+```json
+{
+  "intel_items": [
+    {
+      "intel_id": "intel-XXX",
+      "name": "string (specific object or document: 'Agent Demir's Transfer Request' not 'Useful Document')",
+      "description": "string (narrator voice — what it is and why it matters, deadpan)",
+      "discovery_method": "string (how the player finds it: 'Complete Rosa's second encounter without using a token', 'Search the bus station locker mentioned by the motel clerk')",
+      "location_type": "border|transit|mid_america|nyc_outer|coney_island",
+      "effects": {
+        "unlocks_dialogue": ["list of archetype_ids where this intel opens new options"],
+        "heat_modifier": "number (-2 to +2, passive effect while held)",
+        "money_modifier": "number (one-time gain/loss on discovery)",
+        "special": "string|null (unique effect description)"
+      }
+    }
+  ],
+  "synergy_matrix": [
+    {
+      "combo": ["intel-XXX", "intel-YYY"],
+      "effect": "string (what happens when both are held — specific gameplay outcome)",
+      "narrator_line": "string (deadpan observation about the combination)"
+    }
+  ]
+}
+```
+
+INTEL CATEGORIES (aim for roughly equal distribution):
+- Documents (forged papers, transfer orders, receipts, manifests)
+- Secrets (overheard conversations, discovered relationships, hidden agendas)
+- Objects (keys, phones, badges, tools)
+- Knowledge (route info, schedule patterns, NPC weaknesses)
+- Connections (phone numbers, introductions, favors owed)
+
+QUALITY RULES:
+- Each item should feel like a real object or piece of information, not a game powerup
+- Discovery methods should be tied to specific gameplay moments — NPC interactions, exploration choices
+- Synergy combos should make narrative sense ("Agent Demir's Transfer Request" + "ICE Shift Schedule" = ability to time border crossing)
+- At least 10 synergy combinations in the matrix
+- Effects should be meaningful but not game-breaking
+- Narrator descriptions are deadpan: "A phone number written on a napkin. The napkin is from a Denny's in Tucson. The Denny's closed in 2021."
+
+Return ONLY the JSON. No commentary, no markdown fences.

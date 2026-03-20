@@ -1,0 +1,9 @@
+.ralph/
+.ralph-loop.log
+__pycache__/
+*.pyc
+.DS_Store
+node_modules/
+dist/
+.vercel/
+content/debug_*.txt

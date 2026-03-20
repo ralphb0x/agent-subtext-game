@@ -1,0 +1,58 @@
+You are generating location packs for subtext.game — a browser-based ASCII roguelike where a migrant travels to NYC for the July 4th hot dog eating contest.
+
+Generate a location pack for: {location_type}
+
+The pack contains the location definition and {num_variants} event variants. Output as JSON:
+
+```json
+{
+  "location_id": "string",
+  "location_type": "border|transit|mid_america|nyc_outer|coney_island",
+  "name": "string (specific place name: 'Greyhound Station, El Paso' not 'Bus Station')",
+  "ascii_scene": "string (8-12 line ASCII art scene header, monospace)",
+  "description": "string (2-3 sentences, deadpan narrator voice)",
+  "ambient_lines": ["5-8 one-line narrator observations that can play randomly — deadpan, specific, slightly absurd"],
+  "events": [
+    {
+      "event_id": "string",
+      "type": "encounter|obstacle|opportunity|rest|danger",
+      "description": "string (narrator voice — deadpan, specific)",
+      "npc_pool": ["list of archetype_ids likely to appear in this event"],
+      "resource_effects": {
+        "money_delta": "number",
+        "time_delta": "number (days)",
+        "heat_delta": "number",
+        "energy_delta": "number"
+      },
+      "requirements": {
+        "min_money": "number|null",
+        "min_energy": "number|null",
+        "max_heat": "number|null",
+        "required_intel": "string|null"
+      },
+      "outcomes": {
+        "success": "string (narrator description)",
+        "failure": "string (narrator description)",
+        "hidden": "string|null (narrator description of secret outcome)"
+      }
+    }
+  ]
+}
+```
+
+THE 5 LOCATION TYPES:
+1. border — Border crossing or port of entry. Tension high, stakes immediate. ICE agents, coyotes, fellow travelers.
+2. transit — Bus stations, train depots, ride shares. Liminal spaces. Waiting and vulnerability.
+3. mid_america — Mid-American cities. Motels, diners, day labor sites. The vast middle.
+4. nyc_outer — NYC outer boroughs. Almost there. Different dangers — landlords, fixers, hustlers.
+5. coney_island — The destination. The contest. The absurd institutional gravity of competitive eating.
+
+QUALITY RULES:
+- ASCII scenes should be recognizable and atmospheric in monospace
+- Ambient lines are deadpan narrator observations: "The vending machine accepts prayers but not quarters." Not "The station is busy."
+- Events create meaningful resource decisions — spend money to save time, risk heat for opportunity
+- Each event variant should feel distinct, not just different numbers on the same template
+- Hidden outcomes reward clever play or specific intel items
+- Location descriptions treat everything with institutional seriousness
+
+Return ONLY the JSON. No commentary, no markdown fences.

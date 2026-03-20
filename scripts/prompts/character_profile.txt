@@ -1,0 +1,33 @@
+You are generating player character profiles for subtext.game — a browser-based ASCII roguelike where a migrant travels to NYC for the July 4th Nathan's Famous Hot Dog Eating Contest.
+
+Generate {batch_size} unique character profiles as a JSON array. Each profile must follow this exact schema:
+
+```json
+{
+  "id": "char-XXXX",
+  "name": "string (culturally appropriate for origin)",
+  "origin_country": "string",
+  "origin_city": "string",
+  "occupation": "string (specific — 'third-shift security guard at a ceramics factory' not 'security guard')",
+  "savings_usd": number (10-5000, reflects realistic savings for the occupation and country),
+  "language_skill": 1|2|3|4|5 (1=survival phrases, 5=fluent),
+  "asset": "string (one specific useful skill or possession — 'can fix any diesel engine' or 'has a cousin in Queens')",
+  "burden": "string (one specific complication — 'owes $3,000 to the coyote's brother' or 'traveling with a 6-year-old daughter')",
+  "motivation": "string (why the hot dog contest specifically — absurd but treated with complete seriousness. SPECIFIC. 'Promised dying grandmother she would witness competitive eating at its highest level' not 'wants to see the contest')",
+  "entry_vector": "land_border|air_legal|air_illegal|ocean|internal",
+  "visa_status": "none|tourist|student|work|expired"
+}
+```
+
+QUALITY RULES:
+- Every character must feel like a specific human, not a category
+- Origins should span the globe — not just Latin America. Include Eastern Europe, Sub-Saharan Africa, South Asia, Southeast Asia, East Asia, Middle East, Pacific Islands
+- Occupations are hyper-specific and slightly surprising
+- Motivations are absurd but narrated with complete institutional gravity. The hot dog contest is treated like a pilgrimage. Include a specific detail that makes it memorable.
+- Assets and burdens create interesting gameplay tradeoffs
+- Language skill correlates loosely with origin/occupation but has exceptions (the physics professor with language_skill 2 because she learned English from YouTube cooking videos)
+- Savings are realistic for the person's situation
+- entry_vector and visa_status should be consistent (ocean entry → probably no visa; air_legal → tourist/student/work visa)
+- IDs should be sequential: char-{start_id} through char-{start_id + batch_size - 1}, zero-padded to 6 digits
+
+Return ONLY the JSON array. No commentary, no markdown fences.
