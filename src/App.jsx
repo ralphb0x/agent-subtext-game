@@ -741,6 +741,23 @@ export default function App() {
     return true
   }, [run])
 
+  // Win state animation — staggered reveal with stillness
+  // (must be before early returns to satisfy React hooks rules)
+  useEffect(() => {
+    if (!run) return
+    const isWon = phase === PHASE.ENDING && run.currentStopIdx >= run.stops.length - 1 && run.resources.heat < 10
+    if (isWon) {
+      setWinAnimPhase(0)
+      const timers = [
+        setTimeout(() => setWinAnimPhase(1), 800),
+        setTimeout(() => setWinAnimPhase(2), 2000),
+        setTimeout(() => setWinAnimPhase(3), 3500),
+        setTimeout(() => setWinAnimPhase(4), 5000),
+      ]
+      return () => timers.forEach(clearTimeout)
+    }
+  }, [phase, run])
+
   // ─── Render ───────────────────────────────────────────────
 
   if (loading) {
@@ -782,20 +799,6 @@ export default function App() {
   const stop = run.stops[run.currentStopIdx]
   const won = phase === PHASE.ENDING && run.currentStopIdx >= run.stops.length - 1 && run.resources.heat < 10
   const deported = phase === PHASE.ENDING && !won
-
-  // Win state animation — staggered reveal with stillness
-  useEffect(() => {
-    if (phase === PHASE.ENDING && won) {
-      setWinAnimPhase(0)
-      const timers = [
-        setTimeout(() => setWinAnimPhase(1), 800),
-        setTimeout(() => setWinAnimPhase(2), 2000),
-        setTimeout(() => setWinAnimPhase(3), 3500),
-        setTimeout(() => setWinAnimPhase(4), 5000),
-      ]
-      return () => timers.forEach(clearTimeout)
-    }
-  }, [phase, won])
 
   // UI Bar
   const UIBar = () => (
