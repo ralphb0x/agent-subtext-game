@@ -630,3 +630,89 @@ html, body, #root {
 .intel-count {
   color: #FFB300;
 }
+
+/* ─── Debrief screen ─────────────────────────────────── */
+.debrief-screen {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 0;
+}
+
+.debrief-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.debrief-name {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.debrief-encounter {
+  color: var(--dim);
+  font-size: 12px;
+}
+
+.debrief-arc {
+  color: var(--accent);
+  font-style: italic;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.debrief-status {
+  font-size: 16px;
+  font-weight: bold;
+  padding: 6px 0;
+  border-top: 1px solid #333;
+  border-bottom: 1px solid #333;
+}
+
+.debrief-opened {
+  color: #44AA44;
+}
+
+.debrief-closed {
+  color: #DD4444;
+}
+
+.debrief-guarded {
+  color: #DDAA00;
+}
+
+.debrief-section {
+  padding: 4px 0;
+}
+
+.debrief-label {
+  color: var(--dim);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.debrief-value {
+  color: var(--awg-fg);
+  font-size: 14px;
+}
+
+.debrief-hint {
+  color: var(--accent);
+  font-size: 13px;
+}
+
+.debrief-bonus {
+  color: var(--awg-fg);
+  background: var(--awg-bg);
+  padding: 8px 12px;
+  font-size: 12px;
+}
+
+.debrief-narrator {
+  color: var(--dim);
+  font-style: italic;
+  font-size: 13px;
+  margin-top: 8px;
+}

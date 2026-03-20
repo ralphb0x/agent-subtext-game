@@ -37,6 +37,7 @@ const PHASE = {
   PLAYING: 'playing',
   DIALOGUE: 'dialogue',
   EVENT: 'event',
+  DEBRIEF: 'debrief',
   ENDING: 'ending',
 }
 
@@ -376,6 +377,7 @@ export default function App() {
   const [awgScanning, setAwgScanning] = useState(false)
   const [awgScanDots, setAwgScanDots] = useState(0)
   const [winAnimPhase, setWinAnimPhase] = useState(0)
+  const [debriefData, setDebriefData] = useState(null)
   const rngRef = useRef(null)
 
   // Load content on mount
@@ -407,6 +409,7 @@ export default function App() {
     setDialogueNode(null)
     setCurrentNPC(null)
     setCurrentEvent(null)
+    setDebriefData(null)
   }, [content])
 
   // Boot screen
@@ -630,17 +633,45 @@ export default function App() {
       }
 
       const wasRecurring = currentNPC.isRecurring
-      setDialogueNode(null)
-      setCurrentNPC(null)
-      setShowAWG(false)
-      // Only increment eventIdx for regular NPCs — recurring chars don't consume an event slot
-      if (!wasRecurring) {
+
+      if (wasRecurring) {
+        // Build debrief data for recurring character
+        const rc = content.recurring.find(r => r.character_id === currentNPC.npc_id)
+        if (rc) {
+          const encounters = run.recurringEncounters[rc.character_id] || 1
+          const opened = newRapport >= 2
+          const closed = newRapport <= -2 || newSuspicion >= 3
+          const arcStateKey = Object.keys(rc.arc_states)[Math.min(encounters - 1, Object.keys(rc.arc_states).length - 1)]
+          const arcState = rc.arc_states[arcStateKey]
+          setDebriefData({
+            character: rc,
+            encounters,
+            arcStateName: arcStateKey,
+            arcDescription: arcState?.description || '',
+            finalRapport: newRapport,
+            finalSuspicion: newSuspicion,
+            opened,
+            closed,
+            receptionLanguage: rc.reception_language,
+            opensWhen: rc.opens_when,
+            closesWhen: rc.closes_when,
+            hasAWGBonus: encounters >= 2,
+          })
+        }
+        setDialogueNode(null)
+        setCurrentNPC(null)
+        setShowAWG(false)
+        setPhase(PHASE.DEBRIEF)
+      } else {
+        setDialogueNode(null)
+        setCurrentNPC(null)
+        setShowAWG(false)
         setRun(prev => ({
           ...prev,
           currentEventIdx: prev.currentEventIdx + 1,
         }))
+        setPhase(PHASE.PLAYING)
       }
-      setPhase(PHASE.PLAYING)
     }
   }, [run, dialogueNode, currentNPC, rapport, suspicion, showAWG, content])
 
@@ -913,6 +944,77 @@ export default function App() {
               &gt; play again
             </button>
           )}
+        </div>
+      </div>
+    )
+  }
+
+  // Debrief screen (after recurring character encounters)
+  if (phase === PHASE.DEBRIEF && debriefData) {
+    const db = debriefData
+    const statusLabel = db.opened ? 'OPENED' : db.closed ? 'CLOSED' : 'GUARDED'
+    const statusClass = db.opened ? 'debrief-opened' : db.closed ? 'debrief-closed' : 'debrief-guarded'
+
+    return (
+      <div className="game-container">
+        <UIBar />
+        <div className="debrief-screen">
+          <Portrait recurringId={db.character.character_id} />
+
+          <div className="debrief-header">
+            <span className="debrief-name">{db.character.name}</span>
+            <span className="debrief-encounter">Encounter #{db.encounters}</span>
+          </div>
+
+          <div className="debrief-arc">{db.arcDescription}</div>
+
+          <div className={`debrief-status ${statusClass}`}>
+            {statusLabel}
+          </div>
+
+          <div className="debrief-section">
+            <div className="debrief-label">Reception Language</div>
+            <div className="debrief-value">{db.receptionLanguage}</div>
+          </div>
+
+          <div className="debrief-section">
+            <div className="debrief-label">Opens when</div>
+            <div className="debrief-hint">{db.opensWhen}</div>
+          </div>
+
+          <div className="debrief-section">
+            <div className="debrief-label">Closes when</div>
+            <div className="debrief-hint">{db.closesWhen}</div>
+          </div>
+
+          {db.hasAWGBonus && (
+            <div className="debrief-bonus">
+              2+ encounters — full relationship arc visible with AWG token
+            </div>
+          )}
+
+          {db.opened && (
+            <div className="debrief-narrator">
+              Something shifted. They'll remember you next time.
+            </div>
+          )}
+          {db.closed && (
+            <div className="debrief-narrator">
+              That door closed. It might open again. Might not.
+            </div>
+          )}
+          {!db.opened && !db.closed && (
+            <div className="debrief-narrator">
+              Neither in nor out. The space between still holds.
+            </div>
+          )}
+
+          <button className="continue-btn" onClick={() => {
+            setDebriefData(null)
+            setPhase(PHASE.PLAYING)
+          }}>
+            &gt; continue
+          </button>
         </div>
       </div>
     )
