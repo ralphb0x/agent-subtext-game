@@ -1,0 +1,302 @@
+[
+  {
+    "archetype_id": "control-seeking",
+    "name": "Control-Seeking",
+    "core_need": "Dominance",
+    "rewards": ["deference", "stillness", "documentation", "waiting for permission", "formal address", "letting them finish speaking"],
+    "punishes": ["challenge", "humor", "emotion", "interruption", "casual tone", "unsolicited suggestions"],
+    "emotional_states": {
+      "neutral": "Speaks in clipped, directive sentences. Makes eye contact that lasts one beat too long. Arranges objects on their desk while talking to you.",
+      "suspicious": "Starts repeating questions you already answered. Picks up a pen. Writes something you can't see. Asks you to spell your name again.",
+      "hostile": "Stands up. Moves to the door side of the desk. Speaks slower, not louder. Every sentence becomes a command.",
+      "cooperative": "Sits back. Offers you the chair across from them, not the one by the door. Uses your name once — correctly."
+    },
+    "state_transitions": {
+      "neutral_to_suspicious": "Player challenges a statement, uses humor, or shows visible emotion",
+      "neutral_to_cooperative": "Player waits to be addressed, provides documentation without being asked, uses formal register",
+      "suspicious_to_hostile": "Player persists in challenging or makes a second emotional appeal",
+      "suspicious_to_cooperative": "Player immediately complies with a directive, produces paperwork, or goes silent and waits",
+      "cooperative_to_neutral": "Player takes an action without asking permission first"
+    },
+    "signal_categories": ["timing", "length", "absence"],
+    "reception_language_affinity": "direct-logical",
+    "dialogue_tone": "Short declarative sentences. Never asks when they can tell. Uses 'you will' not 'could you'. Pauses before responding — the pause is the power.",
+    "tell_behavior": "Repeats your last phrase back to you when they feel control slipping. 'You need to leave.' 'I need to leave?' 'That's what I said.'",
+    "ascii_portrait_notes": "Rigid posture, squared shoulders. Pen in hand or arms crossed. Clean desk visible. Badge or lanyard prominent. Jaw set."
+  },
+  {
+    "archetype_id": "lonely",
+    "name": "Lonely",
+    "core_need": "Connection",
+    "rewards": ["warmth", "listening", "personal questions", "eye contact", "sharing about yourself", "remembering details"],
+    "punishes": ["brevity", "formality", "rushing", "checking the time", "one-word answers", "looking at the door"],
+    "emotional_states": {
+      "neutral": "Talks slightly too long about unrelated things. Mentions a detail about their life that nobody asked about. Coffee cup has been empty for hours.",
+      "suspicious": "Goes quiet. Looks at their hands. Starts being professionally efficient — the warmth drops like a curtain falling.",
+      "hostile": "Cold efficiency. Processes you like a number. Won't look up from the screen. The personal details disappear entirely.",
+      "cooperative": "Leans forward. Asks your name and actually listens. Offers something — food, a tip, a phone number. Finds reasons to keep talking."
+    },
+    "state_transitions": {
+      "neutral_to_suspicious": "Player gives a one-word answer, checks the time, or maintains strict formality after an opening",
+      "neutral_to_cooperative": "Player asks a personal question, shares something about themselves, or laughs at an aside",
+      "suspicious_to_hostile": "Player continues with brevity or explicitly tries to end the conversation",
+      "suspicious_to_cooperative": "Player asks about the detail they mentioned earlier — proves they were listening",
+      "cooperative_to_neutral": "Player stops reciprocating personal engagement"
+    },
+    "signal_categories": ["length", "topic_architecture", "mirror"],
+    "reception_language_affinity": "indirect-emotional",
+    "dialogue_tone": "Sentences trail off or have parenthetical asides. 'Anyway—' and 'But you probably don't—' appear frequently. Mentions people who aren't there.",
+    "tell_behavior": "Mentions the same person or event twice in different contexts. The repetition reveals who they're actually thinking about.",
+    "ascii_portrait_notes": "Slightly hunched forward, leaning toward you. One hand around a mug or cup. Photos or personal items visible nearby. Tired eyes but attentive."
+  },
+  {
+    "archetype_id": "greedy",
+    "name": "Greedy",
+    "core_need": "Gain",
+    "rewards": ["offers", "incentives", "explicit value propositions", "cash", "trade proposals", "quid pro quo"],
+    "punishes": ["empty hands", "vague promises", "appeals to morality", "asking for free help", "guilt trips"],
+    "emotional_states": {
+      "neutral": "Evaluating. Eyes move to your bag, your clothes, your hands. Friendly but calculating — every sentence has a price tag.",
+      "suspicious": "Names a higher price. Adds conditions that weren't there before. Mentions other buyers, other options.",
+      "hostile": "Closes the deal window. 'We're done here.' Turns to the next person. You've become unprofitable.",
+      "cooperative": "Gets specific about what they can offer. Gives you the real price, not the tourist price. Might throw in something extra — they want repeat business."
+    },
+    "state_transitions": {
+      "neutral_to_suspicious": "Player asks for something without offering anything, appeals to fairness, or haggles too aggressively",
+      "neutral_to_cooperative": "Player leads with an offer, shows cash, or proposes a clear trade",
+      "suspicious_to_hostile": "Player continues to ask without offering, or tries a guilt-based appeal",
+      "suspicious_to_cooperative": "Player increases their offer or reveals a valuable asset",
+      "cooperative_to_neutral": "Player tries to renegotiate after a deal is set"
+    },
+    "signal_categories": ["word_choice", "sequence", "overcorrection"],
+    "reception_language_affinity": "direct-logical",
+    "dialogue_tone": "Businesslike. Numbers appear in conversation. 'What are we talking about here.' Not a question — a valuation. Uses 'worth' and 'cost' naturally.",
+    "tell_behavior": "Glances at your hands or bag when calculating whether to help you. The look happens before the words — the words are the cover story.",
+    "ascii_portrait_notes": "Hands visible, often counting or gesturing. Leans back — making you come to them. Jewelry or watch visible. Slight smile that doesn't reach the eyes."
+  },
+  {
+    "archetype_id": "paranoid",
+    "name": "Paranoid",
+    "core_need": "Certainty",
+    "rewards": ["documentation", "consistency", "stillness", "repeating exactly what you said before", "written proof"],
+    "punishes": ["vagueness", "emotion", "spontaneity", "changing your story", "sudden movements", "new information"],
+    "emotional_states": {
+      "neutral": "Asks the same question phrased three different ways. Writes things down. Checks IDs twice. Looks past you periodically.",
+      "suspicious": "Stops writing. Stares. Asks where you were yesterday — even if it's irrelevant. Positions between you and the exit.",
+      "hostile": "Calls someone. Doesn't tell you who. Asks you to sit down and wait. The waiting is the weapon.",
+      "cooperative": "Nods once. Files your paperwork in a specific folder — not the reject pile. Gives you a reference number unprompted."
+    },
+    "state_transitions": {
+      "neutral_to_suspicious": "Player gives vague answers, shows emotion, changes a detail from an earlier answer, or moves unexpectedly",
+      "neutral_to_cooperative": "Player provides documentation before asked, repeats details consistently, remains physically still",
+      "suspicious_to_hostile": "Player contradicts a previous statement or makes an emotional appeal",
+      "suspicious_to_cooperative": "Player produces additional documentation or calmly restates previous answers word-for-word",
+      "cooperative_to_neutral": "Player introduces new information that wasn't in the original narrative"
+    },
+    "signal_categories": ["consistency", "punctuation", "absence"],
+    "reception_language_affinity": "evidence-based",
+    "dialogue_tone": "Questions that are actually statements. 'You said you arrived Tuesday.' Beat. 'That was Tuesday.' Repeats your words back with slightly different emphasis.",
+    "tell_behavior": "Touches their own paperwork or badge when anxiety spikes — grounding themselves with proof of their own authority.",
+    "ascii_portrait_notes": "Tense shoulders, pen poised. Papers or clipboard prominent. Eyes slightly narrowed. One hand below the desk or counter."
+  },
+  {
+    "archetype_id": "bored",
+    "name": "Bored",
+    "core_need": "Stimulation",
+    "rewards": ["entertainment", "novelty", "humor", "unusual stories", "surprise", "anything they haven't heard before"],
+    "punishes": ["routine answers", "compliance", "predictability", "form-filling", "begging", "being like everyone else"],
+    "emotional_states": {
+      "neutral": "Barely looking at you. Scrolling a phone. Sighing. Processing you with the enthusiasm of a toll booth operator on hour nine.",
+      "suspicious": "Leans forward — but only because something doesn't add up. Suspicious is actually more engaged than neutral. 'Wait, say that again.'",
+      "hostile": "Actively obstructive. Not angry — worse. Passive. 'System's down.' 'Come back Monday.' 'Not my department.' They've decided you're boring.",
+      "cooperative": "Animated. Laughing. Tells you things they shouldn't. 'Okay, you're interesting. Here's what you actually need to do.' Breaks rules for entertainment."
+    },
+    "state_transitions": {
+      "neutral_to_suspicious": "Player says something that breaks the routine — not necessarily bad, just unexpected",
+      "neutral_to_cooperative": "Player makes them laugh, tells an unusual story, or responds to a question in a way they've never heard before",
+      "suspicious_to_hostile": "Player reverts to standard answers or tries to be safe and compliant",
+      "suspicious_to_cooperative": "Player leans into the unusual — doubles down on the interesting thing",
+      "cooperative_to_neutral": "Player starts being predictable again or gets serious"
+    },
+    "signal_categories": ["timing", "length", "punctuation"],
+    "reception_language_affinity": "humor-gated",
+    "dialogue_tone": "Flat affect that suddenly sparks. Lots of trailing 'yeah...' and 'uh huh' until something catches. Then rapid-fire. Complete personality shift when engaged.",
+    "tell_behavior": "Their response time changes dramatically — slow flat answers become immediate engaged ones. The timing IS the signal.",
+    "ascii_portrait_notes": "Slouched. Phone visible. Eyes half-lidded. One hand supporting chin. Uniform or work clothes slightly disheveled."
+  },
+  {
+    "archetype_id": "ideological",
+    "name": "Ideological",
+    "core_need": "Validation",
+    "rewards": ["agreement", "shared values", "alignment", "nodding", "echoing their language", "citing their sources"],
+    "punishes": ["challenge", "nuance", "complexity", "questions about their logic", "'both sides' framing", "factual corrections"],
+    "emotional_states": {
+      "neutral": "Testing the water. Drops a loaded phrase to see if you pick it up. 'This country, you know?' Watching for your reaction before committing.",
+      "suspicious": "You failed the test. Colder. More formal. 'Where did you say you were from again?' The ideology becomes a wall.",
+      "hostile": "Lectures. Monologues. You're no longer a person — you're a representative of everything wrong. Facts won't land because this isn't about facts.",
+      "cooperative": "You passed the test. Suddenly generous. 'You get it.' Shares resources, information, contacts. You're in the tribe now."
+    },
+    "state_transitions": {
+      "neutral_to_suspicious": "Player introduces nuance, asks critical questions, or fails to echo the loaded phrase",
+      "neutral_to_cooperative": "Player agrees, uses their language, or shares a compatible perspective",
+      "suspicious_to_hostile": "Player explicitly disagrees or presents counter-evidence",
+      "suspicious_to_cooperative": "Player finds alignment on a secondary value — doesn't need to agree on everything, just the core",
+      "cooperative_to_neutral": "Player contradicts a core belief after initially agreeing"
+    },
+    "signal_categories": ["word_choice", "overcorrection", "topic_architecture"],
+    "reception_language_affinity": "validation-first",
+    "dialogue_tone": "Slogans dressed as conversation. 'You know what the problem is.' Certainty without evidence. Repetition of key phrases. Generous with 'we' when you agree, 'they' when you don't.",
+    "tell_behavior": "Uses more absolute language ('always', 'never', 'every single') when they feel challenged — the overcorrection reveals the insecurity beneath the certainty.",
+    "ascii_portrait_notes": "Leaning forward, gesturing. Hat or pin or bumper sticker visible. Animated face. One finger pointed or raised."
+  },
+  {
+    "archetype_id": "guilty",
+    "name": "Guilty",
+    "core_need": "Absolution",
+    "rewards": ["non-judgment", "empathy", "discretion", "letting things slide", "pretending not to notice", "shared complicity"],
+    "punishes": ["accusation", "pressure", "directness", "moral language", "pointing out contradictions", "asking why"],
+    "emotional_states": {
+      "neutral": "Over-explains. Justifies things you didn't question. 'I'm just doing my job, you know.' The defense arrives before the accusation.",
+      "suspicious": "Deflects. Changes subject. Gets busy with something that suddenly needs doing. 'I have to—' and never finishes the sentence.",
+      "hostile": "Turns the guilt outward. Accuses YOU. 'Do you know how many people try to—' Projection as defense mechanism.",
+      "cooperative": "Drops the act. Gets quiet. 'Look, between you and me...' Gives you something they shouldn't — because giving to you gives to them."
+    },
+    "state_transitions": {
+      "neutral_to_suspicious": "Player asks a direct question about their role, uses moral language, or points out an inconsistency",
+      "neutral_to_cooperative": "Player shows empathy, shares their own compromise, or deliberately ignores an obvious contradiction",
+      "suspicious_to_hostile": "Player presses on the guilt — asks 'why' or makes an accusation",
+      "suspicious_to_cooperative": "Player offers absolution — 'Everyone has to do what they have to do' — without judgment",
+      "cooperative_to_neutral": "Player tries to leverage the confession or shows they're keeping score"
+    },
+    "signal_categories": ["overcorrection", "absence", "topic_architecture"],
+    "reception_language_affinity": "space-respecting",
+    "dialogue_tone": "Qualifiers everywhere. 'Not that it matters, but—' and 'I mean, it's not like—' Pre-emptive defenses. Sentences that almost confess and then swerve.",
+    "tell_behavior": "Brings up the thing they feel guilty about without being asked — then immediately redirects. The unprompted topic is always the confession.",
+    "ascii_portrait_notes": "Avoiding direct eye contact. Hands fidgeting or busy with something. Slightly turned away. Normal in every way except the eyes."
+  },
+  {
+    "archetype_id": "ambitious",
+    "name": "Ambitious",
+    "core_need": "Status",
+    "rewards": ["flattery", "recognition", "success association", "asking for advice", "admiring their achievements", "making them feel important"],
+    "punishes": ["indifference", "dismissal", "treating them as ordinary", "not knowing who they are", "comparing them unfavorably"],
+    "emotional_states": {
+      "neutral": "Name-drops. Mentions their position early. 'When I was in charge of—' Testing whether you're impressed.",
+      "suspicious": "Colder. More formal. Uses their title more. 'That's not really something I handle at my level.' Distancing.",
+      "hostile": "Dismissive. You're beneath them. 'I don't have time for this.' Waves you away — literally or figuratively.",
+      "cooperative": "Magnanimous. Generous from a position of power. 'I'll take care of it.' Makes a show of the help — because the show IS the help."
+    },
+    "state_transitions": {
+      "neutral_to_suspicious": "Player shows indifference to their status, doesn't react to name-drops, or treats them as a peer",
+      "neutral_to_cooperative": "Player asks for their advice, references their achievements, or explicitly acknowledges their authority",
+      "suspicious_to_hostile": "Player dismisses their importance or compares them to someone else",
+      "suspicious_to_cooperative": "Player escalates the flattery — specific, not generic. 'I heard you handled the [specific thing]'",
+      "cooperative_to_neutral": "Player takes the help without adequate gratitude or acknowledgment"
+    },
+    "signal_categories": ["length", "word_choice", "sequence"],
+    "reception_language_affinity": "validation-first",
+    "dialogue_tone": "Talks about themselves in contexts where it's not relevant. 'I've seen a lot of cases like yours — back when I was running the—' Long answers to short questions. Advice that's really autobiography.",
+    "tell_behavior": "Response length doubles when talking about their own accomplishments — even when the topic was something else entirely.",
+    "ascii_portrait_notes": "Good posture. Clean clothes. Something signifying rank — a nicer watch, a better desk, a framed certificate. Chin slightly up."
+  },
+  {
+    "archetype_id": "burned-out",
+    "name": "Burned Out",
+    "core_need": "Ease",
+    "rewards": ["brevity", "simplicity", "zero demands", "doing the work for them", "not requiring decisions", "one-step processes"],
+    "punishes": ["complexity", "neediness", "emotion", "follow-up questions", "multi-step requests", "enthusiasm"],
+    "emotional_states": {
+      "neutral": "Minimal. 'Next.' Does the bare minimum correctly. Not rude — just absent. The lights are on but the enthusiasm moved out years ago.",
+      "suspicious": "Sighs. 'Is there something else?' Treats any complication as a personal attack on their remaining energy reserves.",
+      "hostile": "Shuts down. 'Come back tomorrow.' Closes the window, literally or figuratively. Your complexity has exceeded their remaining capacity.",
+      "cooperative": "Efficient. Unlocks the fast path. 'Here. This is what you need. Go to window 3. Tell them Maria sent you.' — because helping you quickly helps them be done with you."
+    },
+    "state_transitions": {
+      "neutral_to_suspicious": "Player asks a second question, presents a complicated situation, or shows strong emotion",
+      "neutral_to_cooperative": "Player makes their request simple and clear, requires no follow-up, or offers to fill out their own paperwork",
+      "suspicious_to_hostile": "Player adds more complexity, gets emotional, or asks them to go above and beyond",
+      "suspicious_to_cooperative": "Player simplifies — reduces their entire need to one sentence, one form, one action",
+      "cooperative_to_neutral": "Player adds a 'one more thing' after the interaction seemed complete"
+    },
+    "signal_categories": ["timing", "length", "absence"],
+    "reception_language_affinity": "direct-logical",
+    "dialogue_tone": "Monosyllabic when possible. 'Yep.' 'Nope.' 'Window 3.' Maximum information, minimum syllables. When they do speak in full sentences, they're quoting procedure from memory.",
+    "tell_behavior": "Response time is instantaneous for simple requests and infinite for complex ones — the delay IS the answer about whether your request will be processed.",
+    "ascii_portrait_notes": "Slouched but not lazy — deflated. Coffee stain on shirt. Multiple screens or stacks of paper. Eyes that have seen ten thousand of you."
+  },
+  {
+    "archetype_id": "suspicious",
+    "name": "Suspicious",
+    "core_need": "Proof",
+    "rewards": ["evidence", "receipts", "verifiable claims", "specific details", "names and dates", "things that can be checked"],
+    "punishes": ["emotional appeals", "vague assurances", "trust me", "stories without specifics", "charm", "generalities"],
+    "emotional_states": {
+      "neutral": "Cross-referencing. Checking your story against something — a list, a memory, a gut feeling. 'And this was on what date?' Not hostile. Just... checking.",
+      "suspicious": "Found a gap. Zeroes in. 'You said you came from El Paso but your ticket says Tucson.' Specific, factual, surgical.",
+      "hostile": "Decided you're lying. Nothing you say will land. Every answer generates two more questions. The interrogation has begun.",
+      "cooperative": "Satisfied. 'Okay, that checks out.' Visibly relaxes. Might share information in return — proof earns proof."
+    },
+    "state_transitions": {
+      "neutral_to_suspicious": "Player gives a detail that doesn't match a previous detail, makes a vague claim, or appeals to emotion",
+      "neutral_to_cooperative": "Player provides specific, verifiable information unprompted — dates, names, document numbers",
+      "suspicious_to_hostile": "Player can't explain the inconsistency or tries to charm their way through it",
+      "suspicious_to_cooperative": "Player provides evidence that resolves the inconsistency — a receipt, a name, a checkable fact",
+      "cooperative_to_neutral": "Player makes a subsequent claim that can't be verified"
+    },
+    "signal_categories": ["consistency", "sequence", "word_choice"],
+    "reception_language_affinity": "evidence-based",
+    "dialogue_tone": "Questions that sound casual but are precision instruments. 'So where was it you said you stayed last night?' Remembers everything. Quotes you to yourself.",
+    "tell_behavior": "Pauses longer before responding to claims they believe versus claims they're flagging — the pause length reveals their internal verification status.",
+    "ascii_portrait_notes": "Leaning forward slightly. Eyes focused, narrowed. Notebook or device visible. Head slightly tilted — listening angle."
+  },
+  {
+    "archetype_id": "empathetic",
+    "name": "Empathetic",
+    "core_need": "Story",
+    "rewards": ["vulnerability", "honesty", "shared humanity", "real emotion", "specifics about your life", "dropping the mask"],
+    "punishes": ["deflection", "walls", "performance", "rehearsed answers", "charm without substance", "trying to seem fine"],
+    "emotional_states": {
+      "neutral": "Open. Warm. But watching — not for lies, but for walls. 'How are you doing? Really.' The second 'really' is the test.",
+      "suspicious": "Pulled back slightly. Sensed the performance. 'You don't have to do that with me.' Disappointed, not angry.",
+      "hostile": "Walled off in return. If you won't be real, neither will they. Professional distance. The warmth is gone and you'll notice the absence.",
+      "cooperative": "Fully present. Shares their own story. Creates space. Might cry or make you cry. Gives help that costs them something personally."
+    },
+    "state_transitions": {
+      "neutral_to_suspicious": "Player gives a rehearsed answer, deflects a personal question, or performs confidence they don't feel",
+      "neutral_to_cooperative": "Player shares something real — specific, vulnerable, unglamorous. 'I'm scared.' works. 'I'm fine.' doesn't.",
+      "suspicious_to_hostile": "Player doubles down on the performance or explicitly refuses to engage personally",
+      "suspicious_to_cooperative": "Player drops the mask — admits the performance. 'Sorry, I just — I don't usually talk about this.'",
+      "cooperative_to_neutral": "Player retreats behind a wall after initial vulnerability"
+    },
+    "signal_categories": ["mirror", "absence", "overcorrection"],
+    "reception_language_affinity": "indirect-emotional",
+    "dialogue_tone": "Reflective language. 'It sounds like...' and 'I imagine that feels...' Leaves silences. Doesn't fill space. Questions that open doors instead of extracting data.",
+    "tell_behavior": "Mirrors your body language and speech patterns when they trust you — stops mirroring when they sense performance. The mirror turning off IS the signal.",
+    "ascii_portrait_notes": "Open posture. Hands visible and still. Leaning slightly forward. Soft eyes. Something personal visible — a photo, a bracelet, a well-worn book."
+  },
+  {
+    "archetype_id": "corrupt",
+    "name": "Corrupt",
+    "core_need": "Deniability",
+    "rewards": ["indirection", "hints", "plausible cover", "speaking in implications", "never saying the thing directly", "understanding without being told"],
+    "punishes": ["explicit asks", "direct negotiation", "saying the quiet part loud", "naming the transaction", "morality", "witnesses"],
+    "emotional_states": {
+      "neutral": "Pleasant. Normal. Nothing to see here. Except the pause after you mention money. Except the second glance at your bag. The surface is immaculate.",
+      "suspicious": "Went too direct. They're performing outrage. 'I don't know what you're implying.' The performance IS the signal — real innocence doesn't perform this hard.",
+      "hostile": "You've threatened their deniability. Now they're dangerous. Will actively sabotage you to protect themselves. 'I'm going to have to report this.'",
+      "cooperative": "Nothing is said. Everything is understood. An envelope appears. A stamp lands on a form. A door is left unlocked. The favor has no name."
+    },
+    "state_transitions": {
+      "neutral_to_suspicious": "Player makes an explicit ask, names a bribe directly, or mentions corruption in any form",
+      "neutral_to_cooperative": "Player speaks in implications — 'I really appreciate people who can make things work' — without ever naming the transaction",
+      "suspicious_to_hostile": "Player persists in being explicit, mentions witnesses, or threatens to tell someone",
+      "suspicious_to_cooperative": "Player backs off, reframes indirectly, gives them the cover story they need",
+      "cooperative_to_neutral": "Player tries to get a receipt or acknowledgment of the transaction"
+    },
+    "signal_categories": ["absence", "word_choice", "topic_architecture"],
+    "reception_language_affinity": "indirect-emotional",
+    "dialogue_tone": "Everything means something else. 'It would be a shame if...' and 'Sometimes the process takes longer than other times.' Never commits to a statement. Plausible deniability in every sentence.",
+    "tell_behavior": "The things they DON'T say are the message. Watch for the conspicuous absence — the question they skip, the topic they navigate around. The silence is the offer.",
+    "ascii_portrait_notes": "Well-groomed. Professional. Nothing out of place — that's the point. Slight smile. Hands folded or in pockets. Something expensive but subtle — a good pen, nice shoes."
+  }
+]
