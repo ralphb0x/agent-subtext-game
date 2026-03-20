@@ -187,7 +187,7 @@ function ShareCard({ run, won }) {
       const stop = run.stops[run.currentStopIdx]
       line(`STATUS: DEPORTED — ${stop?.location?.name || 'Unknown'}`, '#FF4444', 16)
     }
-    line(`Day ${15 - run.resources.daysLeft}  //  $${run.resources.money}  //  AWG tokens used: ${2 - run.awgTokens + (run.awgTokens < 0 ? 0 : 0)}`, '#888')
+    line(`Day ${15 - run.resources.daysLeft}  //  $${run.resources.money}  //  AWG tokens used: ${run.awgTokensUsed}`, '#888')
 
     y += 12
 
@@ -355,6 +355,7 @@ function assembleRun(content, seed) {
     stops,
     resources,
     awgTokens: 2,
+    awgTokensUsed: 0,
     currentStopIdx: 0,
     currentEventIdx: 0,
     intelCollected: [],
@@ -839,7 +840,7 @@ export default function App() {
       }
       return
     }
-    setRun(prev => ({ ...prev, awgTokens: prev.awgTokens - 1 }))
+    setRun(prev => ({ ...prev, awgTokens: prev.awgTokens - 1, awgTokensUsed: prev.awgTokensUsed + 1 }))
     setAwgScanning(true)
     setAwgScanDots(0)
 
