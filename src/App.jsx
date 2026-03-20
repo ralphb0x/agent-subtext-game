@@ -102,6 +102,10 @@ function assembleRun(content, seed) {
   // Assemble 4-5 location stops
   const locationStops = LOCATION_ORDER.slice(startIdx)
 
+  // Distribute recurring characters across stops (shuffle, then assign one per stop)
+  const eligibleRecurring = shuffle(rng, [...content.recurring])
+  const usedRecurring = new Set()
+
   // For each location, pick 2-3 events and assign NPCs
   const stops = locationStops.map(locId => {
     const loc = content.locations.find(l => l.location_id === locId)
@@ -118,24 +122,27 @@ function assembleRun(content, seed) {
       const matchingNpcs = content.npcs.filter(n =>
         n.archetype_id === archetype && n.location_type === locId
       )
+      const fallbackNpcs = content.npcs.filter(n => n.location_type === locId)
       const npc = matchingNpcs.length > 0
         ? pick(rng, matchingNpcs)
-        : pick(rng, content.npcs.filter(n => n.location_type === locId).length > 0
-            ? content.npcs.filter(n => n.location_type === locId)
-            : content.npcs)
+        : fallbackNpcs.length > 0
+          ? pick(rng, fallbackNpcs)
+          : pick(rng, content.npcs)
       return { event, npc }
     })
 
-    // Assign a recurring character if available for this location
-    const recurringChar = content.recurring.find(r =>
-      r.encounter_locations && r.encounter_locations.includes(locId === 'nyc_outer' ? 'nyc' : locId)
+    // Assign a recurring character — rotate through them, don't always pick the same one
+    const matchLoc = locId === 'nyc_outer' ? 'nyc' : locId
+    const recurringChar = eligibleRecurring.find(r =>
+      r.encounter_locations && r.encounter_locations.includes(matchLoc) && !usedRecurring.has(r.character_id)
     )
+    if (recurringChar) usedRecurring.add(recurringChar.character_id)
 
     return {
       location: loc,
       events,
       encounters,
-      recurringChar,
+      recurringChar: recurringChar || null,
       nonEncounterEvents: events.filter(e => e.category !== 'encounter'),
     }
   }).filter(Boolean)
@@ -162,6 +169,7 @@ function assembleRun(content, seed) {
     recurringEncounters: {},
     conversationsWithoutToken: 0,
     secretsFound: [],
+    showingLocation: true,
   }
 }
 
@@ -244,7 +252,7 @@ export default function App() {
     const seed = seedStr ? seedFromString(seedStr) : (Date.now() & 0xFFFFFFFF)
     rngRef.current = createRNG(seed)
     const newRun = assembleRun(content, seed)
-    setRun(newRun)
+    setRun(newRun) // showingLocation: true is set in assembleRun
     setPhase(PHASE.PLAYING)
     setRapport(0)
     setSuspicion(0)
@@ -279,15 +287,20 @@ export default function App() {
 
     const stop = run.stops[run.currentStopIdx]
     if (!stop) {
-      // No more stops — player wins!
       setPhase(PHASE.ENDING)
+      return
+    }
+
+    // Show location overview when first arriving
+    if (run.showingLocation) {
+      // Just render the location screen — player clicks continue
       return
     }
 
     const nextEventIdx = run.currentEventIdx
 
-    // Check for recurring character encounter
-    if (nextEventIdx === 0 && stop.recurringChar) {
+    // Check for recurring character encounter (before regular events, doesn't consume eventIdx)
+    if (nextEventIdx === 0 && stop.recurringChar && !run.recurringDoneThisStop) {
       const rc = stop.recurringChar
       const encounters = run.recurringEncounters[rc.character_id] || 0
       const arcState = rc.arc_states[Math.min(encounters, rc.arc_states.length - 1)]
@@ -309,6 +322,7 @@ export default function App() {
         setPhase(PHASE.DIALOGUE)
         setRun(prev => ({
           ...prev,
+          recurringDoneThisStop: true,
           recurringEncounters: {
             ...prev.recurringEncounters,
             [rc.character_id]: encounters + 1,
@@ -318,8 +332,8 @@ export default function App() {
       }
     }
 
-    // Check encounters
-    if (stop.encounters && stop.encounters[nextEventIdx]) {
+    // Check encounters (indexed from 0)
+    if (stop.encounters && nextEventIdx < stop.encounters.length) {
       const enc = stop.encounters[nextEventIdx]
       const npc = enc.npc
       if (npc && npc.dialogue_tree && npc.dialogue_tree.length > 0) {
@@ -339,17 +353,12 @@ export default function App() {
     if (neIdx >= 0 && neIdx < nonEnc.length) {
       setCurrentEvent(nonEnc[neIdx])
       setPhase(PHASE.EVENT)
-      setRun(prev => ({
-        ...prev,
-        currentEventIdx: prev.currentEventIdx + 1,
-      }))
       return
     }
 
     // Move to next location
     const nextStopIdx = run.currentStopIdx + 1
     if (nextStopIdx >= run.stops.length) {
-      // Reached the end — player wins
       setPhase(PHASE.ENDING)
       return
     }
@@ -358,18 +367,18 @@ export default function App() {
       ...prev,
       currentStopIdx: nextStopIdx,
       currentEventIdx: 0,
-      daysLeft: Math.max(0, prev.resources.daysLeft - 1),
+      showingLocation: true,
+      recurringDoneThisStop: false,
       resources: {
         ...prev.resources,
         daysLeft: Math.max(0, prev.resources.daysLeft - 1),
       },
     }))
-    // Will re-render and show new location
   }, [run])
 
-  // Start the first event when entering PLAYING phase
+  // Auto-advance when in PLAYING phase and not showing location overview
   useEffect(() => {
-    if (phase === PHASE.PLAYING && run && !dialogueNode && !currentEvent) {
+    if (phase === PHASE.PLAYING && run && !run.showingLocation && !dialogueNode && !currentEvent) {
       advanceEvent()
     }
   }, [phase, run, dialogueNode, currentEvent, advanceEvent])
@@ -463,13 +472,17 @@ export default function App() {
         }))
       }
 
+      const wasRecurring = currentNPC.isRecurring
       setDialogueNode(null)
       setCurrentNPC(null)
       setShowAWG(false)
-      setRun(prev => ({
-        ...prev,
-        currentEventIdx: prev.currentEventIdx + 1,
-      }))
+      // Only increment eventIdx for regular NPCs — recurring chars don't consume an event slot
+      if (!wasRecurring) {
+        setRun(prev => ({
+          ...prev,
+          currentEventIdx: prev.currentEventIdx + 1,
+        }))
+      }
       setPhase(PHASE.PLAYING)
     }
   }, [run, dialogueNode, currentNPC, rapport, suspicion, showAWG, content])
@@ -504,6 +517,7 @@ export default function App() {
     const effects = currentEvent.resource_effects || {}
     setRun(prev => ({
       ...prev,
+      currentEventIdx: prev.currentEventIdx + 1,
       resources: {
         money: prev.resources.money + (effects.money || 0),
         daysLeft: Math.max(0, prev.resources.daysLeft + (effects.time || 0)),
@@ -514,8 +528,7 @@ export default function App() {
 
     setCurrentEvent(null)
     setPhase(PHASE.PLAYING)
-    advanceEvent()
-  }, [currentEvent, run, advanceEvent])
+  }, [currentEvent, run])
 
   // ─── Determine ending variant ─────────────────────────────
   const getEndingVariant = useCallback(() => {
@@ -788,8 +801,8 @@ export default function App() {
     )
   }
 
-  // Location overview (playing phase, between events)
-  if (phase === PHASE.PLAYING && stop) {
+  // Location overview (playing phase, showing location)
+  if (phase === PHASE.PLAYING && stop && run.showingLocation) {
     return (
       <div className="game-container">
         <UIBar />
@@ -803,7 +816,9 @@ export default function App() {
             {pick(rngRef.current || Math.random, stop.location.ambient_details)}
           </div>
         )}
-        <button className="continue-btn" onClick={advanceEvent}>
+        <button className="continue-btn" onClick={() => {
+          setRun(prev => ({ ...prev, showingLocation: false }))
+        }}>
           &gt; continue
         </button>
       </div>
