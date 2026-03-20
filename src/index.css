@@ -577,6 +577,24 @@ html, body, #root {
   100% { opacity: 1; transform: translateY(0); }
 }
 
+/* Win punctuation typewriter */
+.typewriter-text {
+  white-space: pre-wrap;
+}
+
+.typewriter-cursor {
+  display: inline;
+  opacity: 1;
+  animation: cursorBlink 0.8s step-end infinite;
+  color: #666;
+  font-weight: 300;
+}
+
+@keyframes cursorBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
 /* Glitch effect for deportation */
 .glitch {
   animation: glitch 0.3s linear;

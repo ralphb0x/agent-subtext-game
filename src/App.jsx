@@ -75,6 +75,44 @@ function EnergyBar({ value, max = 10 }) {
   )
 }
 
+// ─── Win punctuation typewriter ──────────────────────────────
+function TypewriterText({ text, delay = 0, charSpeed = 60, punctPause = 400 }) {
+  const [revealed, setRevealed] = useState(0)
+  const [started, setStarted] = useState(false)
+
+  useEffect(() => {
+    if (delay <= 0) { setStarted(true); return }
+    const t = setTimeout(() => setStarted(true), delay)
+    return () => clearTimeout(t)
+  }, [delay])
+
+  useEffect(() => {
+    if (!started || !text) return
+    setRevealed(0)
+    let idx = 0
+    let timer
+    const advance = () => {
+      if (idx >= text.length) return
+      idx++
+      setRevealed(idx)
+      const ch = text[idx - 1]
+      const isPunct = '.,—–-…:;'.includes(ch)
+      const nextDelay = isPunct ? punctPause : charSpeed
+      timer = setTimeout(advance, nextDelay)
+    }
+    timer = setTimeout(advance, charSpeed)
+    return () => clearTimeout(timer)
+  }, [started, text, charSpeed, punctPause])
+
+  if (!started) return <span className="typewriter-text">&nbsp;</span>
+  return (
+    <span className="typewriter-text">
+      {text.slice(0, revealed)}
+      {revealed < text.length && <span className="typewriter-cursor">▌</span>}
+    </span>
+  )
+}
+
 // ─── ASCII Portrait ──────────────────────────────────────────
 function Portrait({ archetypeId, recurringId }) {
   const lines = recurringId
@@ -950,7 +988,9 @@ export default function App() {
           {showStatus && (
             <>
               <div className={`ending-narrator ${won ? 'win-fade win-title' : ''}`}>
-                {deported ? `DEPORTED — ${stop?.location?.name || 'Unknown'}` : 'YOU MADE IT.'}
+                {deported
+                  ? `DEPORTED — ${stop?.location?.name || 'Unknown'}`
+                  : <TypewriterText text="YOU MADE IT." delay={200} charSpeed={100} punctPause={600} />}
               </div>
 
               {variant && (
@@ -1004,7 +1044,11 @@ export default function App() {
             <div className="ending-section win-fade">
               <div className="ending-section-title">THE BRIDGE</div>
               {variant.bridge.lines && variant.bridge.lines.map((line, i) => (
-                <div key={i} className="bridge-text">{line}</div>
+                <div key={i} className="bridge-text">
+                  {won
+                    ? <TypewriterText text={line} delay={i * 800} charSpeed={50} punctPause={400} />
+                    : line}
+                </div>
               ))}
               <a
                 className="cta-link"
@@ -1015,7 +1059,11 @@ export default function App() {
                 arewegood.com
               </a>
               {variant.bridge.closer && (
-                <div className="closer">{variant.bridge.closer}</div>
+                <div className="closer">
+                  {won
+                    ? <TypewriterText text={variant.bridge.closer} delay={1200} charSpeed={80} punctPause={500} />
+                    : variant.bridge.closer}
+                </div>
               )}
             </div>
           )}
