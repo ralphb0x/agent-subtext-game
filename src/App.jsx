@@ -196,14 +196,15 @@ function ShareCard({ run, won }) {
 
 // ─── Content loader ───────────────────────────────────────────
 async function loadContent() {
+  const base = import.meta.env.BASE_URL
   const [characters, npcs, locations, archetypes, intel, recurring, endings] = await Promise.all([
-    fetch('/content/characters.json').then(r => r.json()),
-    fetch('/content/npcs.json').then(r => r.json()),
-    fetch('/content/locations.json').then(r => r.json()),
-    fetch('/content/archetypes.json').then(r => r.json()),
-    fetch('/content/intel.json').then(r => r.json()),
-    fetch('/content/recurring.json').then(r => r.json()),
-    fetch('/content/endings.json').then(r => r.json()),
+    fetch(`${base}content/characters.json`).then(r => r.json()),
+    fetch(`${base}content/npcs.json`).then(r => r.json()),
+    fetch(`${base}content/locations.json`).then(r => r.json()),
+    fetch(`${base}content/archetypes.json`).then(r => r.json()),
+    fetch(`${base}content/intel.json`).then(r => r.json()),
+    fetch(`${base}content/recurring.json`).then(r => r.json()),
+    fetch(`${base}content/endings.json`).then(r => r.json()),
   ])
   return { characters, npcs, locations: locations.locations, archetypes, intel, recurring, endings }
 }
