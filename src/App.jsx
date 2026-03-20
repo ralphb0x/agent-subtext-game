@@ -541,7 +541,7 @@ export default function App() {
 
   // Key handler for boot
   useEffect(() => {
-    const handler = (e) => {
+    const handler = () => {
       if (phase === PHASE.BOOT && content) {
         startRun()
       }
@@ -829,7 +829,7 @@ export default function App() {
         setPhase(PHASE.PLAYING)
       }
     }
-  }, [run, dialogueNode, currentNPC, rapport, suspicion, showAWG, content])
+  }, [run, dialogueNode, currentNPC, rapport, suspicion, showAWG, content, npcEmotionalState, resolveDialogueNode])
 
   // Activate AWG token with scan animation
   const activateAWG = useCallback(() => {
@@ -925,8 +925,6 @@ export default function App() {
     if (!run || !content) return null
     const variants = content.endings.variants
     const won = run.currentStopIdx >= run.stops.length - 1 && run.resources.heat < 10
-    const heat = run.resources.heat
-
     if (!won) {
       if (run.currentStopIdx <= 1) return variants.deported_early
       if (run.currentStopIdx <= 2) return variants.deported_mid
