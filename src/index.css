@@ -143,9 +143,27 @@ html, body, #root {
   font-size: 13px;
 }
 
+/* ASCII Portrait */
+.ascii-portrait {
+  color: var(--dim);
+  font-size: 10px;
+  line-height: 1.15;
+  white-space: pre;
+  margin-bottom: 8px;
+  overflow-x: auto;
+}
+
 /* NPC dialogue */
 .npc-section {
   margin-bottom: 16px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.npc-info {
+  flex: 1;
+  min-width: 0;
 }
 
 .npc-name {
@@ -157,6 +175,41 @@ html, body, #root {
   color: var(--dim);
   font-size: 12px;
   margin-bottom: 8px;
+}
+
+/* Share card */
+.share-card-section {
+  margin: 24px 0;
+  text-align: center;
+}
+
+.share-card-section canvas {
+  border: 1px solid #333;
+  margin: 0 auto 12px;
+}
+
+.share-btn {
+  background: none;
+  border: 1px solid var(--dim);
+  color: var(--fg);
+  padding: 6px 20px;
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.share-btn:hover {
+  border-color: var(--fg);
+}
+
+.share-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
 }
 
 .npc-line {
@@ -521,5 +574,19 @@ html, body, #root {
 
   html, body, #root {
     font-size: 13px;
+  }
+
+  .npc-section {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .ascii-portrait {
+    font-size: 8px;
+  }
+
+  .share-card-section canvas {
+    max-width: 100%;
+    height: auto;
   }
 }

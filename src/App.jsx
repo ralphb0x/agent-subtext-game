@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { getPortrait, getRecurringPortrait } from './portraits'
 
 // ─── Seeded RNG ───────────────────────────────────────────────
 function createRNG(seed) {
@@ -70,6 +71,126 @@ function EnergyBar({ value, max = 10 }) {
       <span className="energy-filled">{'█'.repeat(filled)}</span>
       <span className="bar-empty">{'░'.repeat(empty)}</span>
     </span>
+  )
+}
+
+// ─── ASCII Portrait ──────────────────────────────────────────
+function Portrait({ archetypeId, recurringId }) {
+  const lines = recurringId
+    ? getRecurringPortrait(recurringId)
+    : getPortrait(archetypeId)
+  if (!lines) return null
+  return (
+    <pre className="ascii-portrait">{lines.join('\n')}</pre>
+  )
+}
+
+// ─── Share Card Generator ────────────────────────────────────
+function ShareCard({ run, won }) {
+  const canvasRef = useRef(null)
+  const [generated, setGenerated] = useState(false)
+  const [dataUrl, setDataUrl] = useState(null)
+
+  const generate = useCallback(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    const W = 600, H = 400
+    canvas.width = W
+    canvas.height = H
+
+    // Background
+    ctx.fillStyle = '#0D0D0D'
+    ctx.fillRect(0, 0, W, H)
+
+    // Border
+    ctx.strokeStyle = '#333'
+    ctx.lineWidth = 2
+    ctx.strokeRect(8, 8, W - 16, H - 16)
+
+    ctx.font = '14px "IBM Plex Mono", monospace'
+    ctx.fillStyle = '#FFFFFF'
+
+    let y = 40
+    const line = (text, color, size) => {
+      if (color) ctx.fillStyle = color
+      if (size) ctx.font = `${size}px "IBM Plex Mono", monospace`
+      ctx.fillText(text, 24, y)
+      y += (size || 14) + 8
+      ctx.fillStyle = '#FFFFFF'
+      ctx.font = '14px "IBM Plex Mono", monospace'
+    }
+
+    // Name + origin
+    line(run.character.name, '#FFFFFF', 18)
+    line(`${run.character.origin_city}, ${run.character.origin_country}  //  ${run.character.occupation}`, '#888')
+
+    y += 12
+
+    // Status
+    if (won) {
+      line('STATUS: ARRIVED — CONEY ISLAND', '#FFB300', 16)
+    } else {
+      const stop = run.stops[run.currentStopIdx]
+      line(`STATUS: DEPORTED — ${stop?.location?.name || 'Unknown'}`, '#FF4444', 16)
+    }
+    line(`Day ${15 - run.resources.daysLeft}  //  $${run.resources.money}  //  AWG tokens used: ${2 - run.awgTokens + (run.awgTokens < 0 ? 0 : 0)}`, '#888')
+
+    y += 12
+
+    // Gaps
+    line('GAPS MISSED:', '#FFB300')
+    if (run.gapsMissed.length === 0) {
+      line('  None — perfect read', '#666')
+    } else {
+      const uniqueGaps = [...new Set(run.gapsMissed.map(g => g.category))]
+      line(`  ${uniqueGaps.slice(0, 4).join(', ')}`, '#AAA')
+    }
+
+    y += 8
+
+    // Separator
+    ctx.fillStyle = '#333'
+    ctx.fillRect(24, y, W - 48, 1)
+    y += 16
+
+    // Footer
+    ctx.fillStyle = '#888'
+    ctx.font = '12px "IBM Plex Mono", monospace'
+    ctx.fillText('subtext.game', 24, H - 24)
+    ctx.fillText('arewegood.com', W - 150, H - 24)
+
+    setDataUrl(canvas.toDataURL('image/png'))
+    setGenerated(true)
+  }, [run, won])
+
+  return (
+    <div className="share-card-section">
+      <canvas ref={canvasRef} style={{ display: generated ? 'block' : 'none', maxWidth: '100%' }} />
+      {!generated && (
+        <button className="share-btn" onClick={generate}>
+          GENERATE SHARE CARD
+        </button>
+      )}
+      {generated && dataUrl && (
+        <div className="share-actions">
+          <a href={dataUrl} download="subtext-run.png" className="share-btn">
+            DOWNLOAD
+          </a>
+          <button className="share-btn" onClick={() => {
+            if (navigator.clipboard && canvasRef.current) {
+              canvasRef.current.toBlob(blob => {
+                if (blob) {
+                  navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).catch(() => {})
+                }
+              })
+            }
+          }}>
+            COPY TO CLIPBOARD
+          </button>
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -745,6 +866,10 @@ export default function App() {
           )}
 
           {showBridge && (
+            <ShareCard run={run} won={won} />
+          )}
+
+          {showBridge && (
             <button className={`play-again-btn ${won ? 'win-fade' : ''}`} onClick={() => startRun()}>
               &gt; play again
             </button>
@@ -794,11 +919,17 @@ export default function App() {
         {stop && <div className="location-name">{stop.location.name}</div>}
 
         <div className="npc-section">
-          <div className="npc-name">{currentNPC.name}</div>
-          <div className="npc-role">{currentNPC.role}</div>
-          {currentNPC.appearance && (
-            <div className="narrator-line">{currentNPC.appearance}</div>
-          )}
+          <Portrait
+            archetypeId={currentNPC.archetype_id}
+            recurringId={currentNPC.character_id}
+          />
+          <div className="npc-info">
+            <div className="npc-name">{currentNPC.name}</div>
+            <div className="npc-role">{currentNPC.role}</div>
+            {currentNPC.appearance && (
+              <div className="narrator-line">{currentNPC.appearance}</div>
+            )}
+          </div>
         </div>
 
         <div className="npc-line">"{dialogueNode.npc_line}"</div>
