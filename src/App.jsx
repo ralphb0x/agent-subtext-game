@@ -571,9 +571,10 @@ export default function App() {
     if (nextEventIdx === 0 && stop.recurringChar && !run.recurringDoneThisStop) {
       const rc = stop.recurringChar
       const encounters = run.recurringEncounters[rc.character_id] || 0
-      const arcState = rc.arc_states[Math.min(encounters, rc.arc_states.length - 1)]
-      if (arcState && arcState.dialogue_nodes && arcState.dialogue_nodes.length > 0) {
-        const node = arcState.dialogue_nodes[0]
+      const arcStateKeys = Object.keys(rc.arc_states)
+      const arcState = rc.arc_states[arcStateKeys[Math.min(encounters, arcStateKeys.length - 1)]]
+      if (arcState && arcState.dialogue_tree && arcState.dialogue_tree.length > 0) {
+        const node = arcState.dialogue_tree[0]
         setCurrentNPC({
           npc_id: rc.character_id,
           name: rc.name,
@@ -748,7 +749,7 @@ export default function App() {
       const rc = content.recurring.find(r => r.character_id === currentNPC.npc_id)
       if (rc) {
         // Build combined dialogue tree from all arc states for resolution
-        const allNodes = rc.arc_states.flatMap(s => s.dialogue_nodes || [])
+        const allNodes = Object.values(rc.arc_states).flatMap(s => s.dialogue_tree || [])
         nextNode = resolveDialogueNode(allNodes, nextNodeId, newRapport, newSuspicion, wasSuspicious)
       }
     }
