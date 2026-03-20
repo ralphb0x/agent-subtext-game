@@ -108,10 +108,20 @@ html, body, #root {
   letter-spacing: -1px;
 }
 
-.bar-filled-low { color: var(--heat-low); }
-.bar-filled-mid { color: var(--heat-mid); }
-.bar-filled-high { color: var(--heat-high); }
+.bar-filled-low { color: var(--heat-low); transition: color 0.3s ease; }
+.bar-filled-mid { color: var(--heat-mid); transition: color 0.3s ease; }
+.bar-filled-high { color: var(--heat-high); transition: color 0.3s ease; }
 .bar-empty { color: #333; }
+
+.heat-flash {
+  animation: heatFlash 0.6s ease-out;
+}
+
+@keyframes heatFlash {
+  0% { text-shadow: 0 0 8px var(--heat-high); transform: scale(1.1); }
+  50% { text-shadow: 0 0 16px var(--heat-high); }
+  100% { text-shadow: none; transform: scale(1); }
+}
 
 .energy-filled { color: var(--energy-fg); }
 
@@ -210,6 +220,26 @@ html, body, #root {
   display: flex;
   gap: 12px;
   justify-content: center;
+}
+
+.emotional-state {
+  font-size: 11px;
+  letter-spacing: 2px;
+  margin-bottom: 6px;
+  padding: 2px 8px;
+  display: inline-block;
+  transition: color 0.3s ease, border-color 0.3s ease;
+}
+
+.state-neutral { color: var(--dim); border-left: 2px solid var(--dim); }
+.state-cooperative { color: var(--heat-low); border-left: 2px solid var(--heat-low); }
+.state-suspicious { color: var(--heat-mid); border-left: 2px solid var(--heat-mid); }
+.state-hostile { color: var(--heat-high); border-left: 2px solid var(--heat-high); }
+
+.state-transition {
+  font-size: 10px;
+  color: var(--dim);
+  letter-spacing: 0;
 }
 
 .npc-line {

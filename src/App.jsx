@@ -378,7 +378,72 @@ export default function App() {
   const [awgScanDots, setAwgScanDots] = useState(0)
   const [winAnimPhase, setWinAnimPhase] = useState(0)
   const [debriefData, setDebriefData] = useState(null)
+  const [npcEmotionalState, setNpcEmotionalState] = useState('neutral')
+  const [prevEmotionalState, setPrevEmotionalState] = useState(null)
+  const [heatFlash, setHeatFlash] = useState(false)
   const rngRef = useRef(null)
+
+  // ─── Emotional state machine helpers ─────────────────────
+  // Evaluate trigger_condition strings like "rapport <= -1 or suspicion >= 2"
+  const evaluateTrigger = useCallback((trigger, r, s, wasSuspicious) => {
+    if (!trigger) return true
+    if (trigger === 'initial_greeting') return true
+    if (trigger === 'cooperative_reset') return true
+    if (trigger.includes('secret_discovered')) return false // handled separately
+
+    // Parse simple conditions: "rapport < 2 and rapport > -1", "rapport <= -1 or suspicion >= 2"
+    const evalCondition = (cond) => {
+      cond = cond.trim()
+      if (cond === 'was_suspicious') return wasSuspicious
+      const match = cond.match(/^(rapport|suspicion)\s*(<=|>=|<|>|==)\s*(-?\d+)$/)
+      if (!match) return true
+      const val = match[1] === 'rapport' ? r : s
+      const op = match[2]
+      const num = parseInt(match[3])
+      switch (op) {
+        case '<': return val < num
+        case '>': return val > num
+        case '<=': return val <= num
+        case '>=': return val >= num
+        case '==': return val === num
+        default: return true
+      }
+    }
+
+    // Split by 'or' first (lower precedence), then 'and'
+    const orParts = trigger.split(/\bor\b/)
+    return orParts.some(orPart => {
+      const andParts = orPart.split(/\band\b/)
+      return andParts.every(evalCondition)
+    })
+  }, [])
+
+  // Find the best matching dialogue node based on current rapport/suspicion
+  const resolveDialogueNode = useCallback((dialogueTree, targetNodeId, r, s, wasSuspicious) => {
+    if (!dialogueTree || dialogueTree.length === 0) return null
+
+    // First try the target node — if its trigger matches, use it
+    const targetNode = dialogueTree.find(n => n.node_id === targetNodeId)
+    if (targetNode && evaluateTrigger(targetNode.trigger_condition, r, s, wasSuspicious)) {
+      return targetNode
+    }
+
+    // Target doesn't match — find the best node by current state
+    // Priority: most specific matching trigger wins
+    const candidates = dialogueTree.filter(n =>
+      n.node_id !== targetNodeId && evaluateTrigger(n.trigger_condition, r, s, wasSuspicious)
+    )
+
+    if (candidates.length === 0) return targetNode // fallback to target anyway
+
+    // Prefer nodes matching the emotional state we'd expect
+    const expectedState = r >= 3 ? 'cooperative' : r <= -1 || s >= 2 ? 'suspicious' : s >= 4 || r <= -3 ? 'hostile' : 'neutral'
+    const stateMatch = candidates.find(n => n.emotional_state === expectedState)
+    if (stateMatch) return stateMatch
+
+    // Otherwise return the last matching candidate (most specific triggers tend to be later)
+    return candidates[candidates.length - 1]
+  }, [evaluateTrigger])
 
   // Load content on mount
   useEffect(() => {
@@ -410,6 +475,8 @@ export default function App() {
     setCurrentNPC(null)
     setCurrentEvent(null)
     setDebriefData(null)
+    setNpcEmotionalState('neutral')
+    setPrevEmotionalState(null)
   }, [content])
 
   // Boot screen
@@ -468,6 +535,8 @@ export default function App() {
         setRapport(0)
         setSuspicion(0)
         setShowAWG(false)
+        setNpcEmotionalState(node.emotional_state || 'neutral')
+        setPrevEmotionalState(null)
         setPhase(PHASE.DIALOGUE)
         setRun(prev => ({
           ...prev,
@@ -502,6 +571,8 @@ export default function App() {
         setRapport(startRapport)
         setSuspicion(startSuspicion)
         setShowAWG(false)
+        setNpcEmotionalState(npc.dialogue_tree[0].emotional_state || 'neutral')
+        setPrevEmotionalState(null)
         setPhase(PHASE.DIALOGUE)
         return
       }
@@ -556,6 +627,12 @@ export default function App() {
     const heatDelta = option.suspicion_delta > 0 ? option.suspicion_delta : 0
     const newHeat = Math.min(10, run.resources.heat + heatDelta)
 
+    // Trigger heat bar flash animation when heat rises
+    if (heatDelta > 0) {
+      setHeatFlash(true)
+      setTimeout(() => setHeatFlash(false), 600)
+    }
+
     setRun(prev => ({
       ...prev,
       resources: {
@@ -588,24 +665,32 @@ export default function App() {
       }))
     }
 
-    // Find next node
+    // Find next node using emotional state machine
     const nextNodeId = option.next_node
     let nextNode = null
+    const wasSuspicious = npcEmotionalState === 'suspicious' || npcEmotionalState === 'hostile'
+
     if (nextNodeId && currentNPC.dialogue_tree) {
-      nextNode = currentNPC.dialogue_tree.find(n => n.node_id === nextNodeId)
+      // Use state machine to resolve — validates trigger conditions
+      nextNode = resolveDialogueNode(currentNPC.dialogue_tree, nextNodeId, newRapport, newSuspicion, wasSuspicious)
     }
     // For recurring characters, look in arc states
     if (nextNodeId && currentNPC.isRecurring && !nextNode) {
       const rc = content.recurring.find(r => r.character_id === currentNPC.npc_id)
       if (rc) {
-        for (const state of rc.arc_states) {
-          nextNode = state.dialogue_nodes.find(n => n.node_id === nextNodeId)
-          if (nextNode) break
-        }
+        // Build combined dialogue tree from all arc states for resolution
+        const allNodes = rc.arc_states.flatMap(s => s.dialogue_nodes || [])
+        nextNode = resolveDialogueNode(allNodes, nextNodeId, newRapport, newSuspicion, wasSuspicious)
       }
     }
 
     if (nextNode) {
+      // Track emotional state transition
+      const newState = nextNode.emotional_state || npcEmotionalState
+      if (newState !== npcEmotionalState) {
+        setPrevEmotionalState(npcEmotionalState)
+      }
+      setNpcEmotionalState(newState)
       setDialogueNode(nextNode)
       setShowAWG(false)
     } else {
@@ -838,7 +923,7 @@ export default function App() {
       <span className="stat">DAY {15 - run.resources.daysLeft}</span>
       <span className="stat">${run.resources.money}</span>
       <span className="stat">{run.resources.daysLeft} DAYS</span>
-      <span className="stat">HEAT:<HeatBar value={run.resources.heat} /></span>
+      <span className={`stat ${heatFlash ? 'heat-flash' : ''}`}>HEAT:<HeatBar value={run.resources.heat} /></span>
       <span className="stat">ENERGY:<EnergyBar value={run.resources.energy} /></span>
       {run.intelCollected.length > 0 && <span className="stat intel-count">INTEL:{run.intelCollected.length}</span>}
       <span className="token-count">[AWG:{run.awgTokens}]</span>
@@ -1084,6 +1169,13 @@ export default function App() {
               <div className="narrator-line">{currentNPC.appearance}</div>
             )}
           </div>
+        </div>
+
+        <div className={`emotional-state state-${npcEmotionalState}`}>
+          {npcEmotionalState.toUpperCase()}
+          {prevEmotionalState && prevEmotionalState !== npcEmotionalState && (
+            <span className="state-transition"> ← was {prevEmotionalState}</span>
+          )}
         </div>
 
         <div className="npc-line">"{dialogueNode.npc_line}"</div>
