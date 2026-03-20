@@ -233,6 +233,9 @@ export default function App() {
   const [currentEvent, setCurrentEvent] = useState(null)
   const [deportGlitch, setDeportGlitch] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [awgScanning, setAwgScanning] = useState(false)
+  const [awgScanDots, setAwgScanDots] = useState(0)
+  const [winAnimPhase, setWinAnimPhase] = useState(0)
   const rngRef = useRef(null)
 
   // Load content on mount
@@ -258,6 +261,9 @@ export default function App() {
     setSuspicion(0)
     setShowAWG(false)
     setShowEmailGate(false)
+    setAwgScanning(false)
+    setAwgScanDots(0)
+    setWinAnimPhase(0)
     setDialogueNode(null)
     setCurrentNPC(null)
     setCurrentEvent(null)
@@ -487,9 +493,9 @@ export default function App() {
     }
   }, [run, dialogueNode, currentNPC, rapport, suspicion, showAWG, content])
 
-  // Activate AWG token
+  // Activate AWG token with scan animation
   const activateAWG = useCallback(() => {
-    if (!run) return
+    if (!run || awgScanning) return
     if (run.awgTokens <= 0) {
       if (!emailSubmitted) {
         setShowEmailGate(true)
@@ -497,8 +503,24 @@ export default function App() {
       return
     }
     setRun(prev => ({ ...prev, awgTokens: prev.awgTokens - 1 }))
-    setShowAWG(true)
-  }, [run, emailSubmitted])
+    setAwgScanning(true)
+    setAwgScanDots(0)
+
+    // Accumulate dots over 800ms (8 dots, 100ms each)
+    let dotCount = 0
+    const dotInterval = setInterval(() => {
+      dotCount++
+      setAwgScanDots(dotCount)
+      if (dotCount >= 8) {
+        clearInterval(dotInterval)
+        setTimeout(() => {
+          setAwgScanning(false)
+          setAwgScanDots(0)
+          setShowAWG(true)
+        }, 100)
+      }
+    }, 100)
+  }, [run, emailSubmitted, awgScanning])
 
   // Email submit
   const handleEmailSubmit = useCallback((email) => {
@@ -605,6 +627,20 @@ export default function App() {
   const won = phase === PHASE.ENDING && run.currentStopIdx >= run.stops.length - 1 && run.resources.heat < 10
   const deported = phase === PHASE.ENDING && !won
 
+  // Win state animation — staggered reveal with stillness
+  useEffect(() => {
+    if (phase === PHASE.ENDING && won) {
+      setWinAnimPhase(0)
+      const timers = [
+        setTimeout(() => setWinAnimPhase(1), 800),
+        setTimeout(() => setWinAnimPhase(2), 2000),
+        setTimeout(() => setWinAnimPhase(3), 3500),
+        setTimeout(() => setWinAnimPhase(4), 5000),
+      ]
+      return () => timers.forEach(clearTimeout)
+    }
+  }, [phase, won])
+
   // UI Bar
   const UIBar = () => (
     <div className="ui-bar">
@@ -621,60 +657,75 @@ export default function App() {
   // Ending screen
   if (phase === PHASE.ENDING) {
     const variant = getEndingVariant()
+    // For win: use staggered reveal. For deported: show all immediately.
+    const showHeader = deported || winAnimPhase >= 0
+    const showStatus = deported || winAnimPhase >= 1
+    const showGaps = deported || winAnimPhase >= 2
+    const showRecurring = deported || winAnimPhase >= 3
+    const showBridge = deported || winAnimPhase >= 4
+
     return (
       <div className="game-container">
-        <div className={`ending-screen ${deported && deportGlitch ? 'glitch' : ''}`}>
-          {variant && variant.header_ascii && (
-            <div className="ending-header">{variant.header_ascii.join('\n')}</div>
+        <div className={`ending-screen ${deported && deportGlitch ? 'glitch' : ''} ${won ? 'win-ending' : ''}`}>
+          {showHeader && variant && variant.header_ascii && (
+            <div className={`ending-header ${won ? 'win-fade' : ''}`}>{variant.header_ascii.join('\n')}</div>
           )}
 
-          <div className="ending-narrator">
-            {deported ? `DEPORTED — ${stop?.location?.name || 'Unknown'}` : 'YOU MADE IT.'}
-          </div>
+          {showStatus && (
+            <>
+              <div className={`ending-narrator ${won ? 'win-fade win-title' : ''}`}>
+                {deported ? `DEPORTED — ${stop?.location?.name || 'Unknown'}` : 'YOU MADE IT.'}
+              </div>
 
-          {variant && (
-            <div className="ending-narrator" style={{ fontStyle: 'italic' }}>
-              {variant.narrator_line}
+              {variant && (
+                <div className={`ending-narrator ${won ? 'win-fade' : ''}`} style={{ fontStyle: 'italic' }}>
+                  {variant.narrator_line}
+                </div>
+              )}
+            </>
+          )}
+
+          {showGaps && (
+            <div className={`ending-section ${won ? 'win-fade' : ''}`}>
+              <div className="ending-section-title">YOUR GAPS THIS RUN</div>
+              {run.gapsMissed.length === 0 ? (
+                <div className="gap-item">None detected. You read everyone perfectly.</div>
+              ) : (
+                run.gapsMissed.map((gap, i) => (
+                  <div key={i} className="gap-item">
+                    {gap.category} — {gap.npcName} at {gap.location}
+                    <div style={{ color: '#666', fontSize: 12, paddingLeft: 8 }}>
+                      They said: "{gap.surface}" — They meant: {gap.actual}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           )}
 
-          <div className="ending-section">
-            <div className="ending-section-title">YOUR GAPS THIS RUN</div>
-            {run.gapsMissed.length === 0 ? (
-              <div className="gap-item">None detected. You read everyone perfectly.</div>
-            ) : (
-              run.gapsMissed.map((gap, i) => (
-                <div key={i} className="gap-item">
-                  {gap.category} — {gap.npcName} at {gap.location}
-                  <div style={{ color: '#666', fontSize: 12, paddingLeft: 8 }}>
-                    They said: "{gap.surface}" — They meant: {gap.actual}
+          {showRecurring && (
+            <div className={`ending-section ${won ? 'win-fade' : ''}`}>
+              <div className="ending-section-title">YOUR RECURRING CHARACTERS</div>
+              {Object.entries(run.recurringEncounters).map(([id, count]) => {
+                const rc = content.recurring.find(r => r.character_id === id)
+                if (!rc) return null
+                const cracked = count >= 2
+                return (
+                  <div key={id} className="recurring-char">
+                    <span className={cracked ? 'cracked' : 'not-cracked'}>
+                      {rc.name} — {rc.reception_language} — {cracked ? 'CRACKED' : `${count} encounter${count > 1 ? 's' : ''}`}
+                    </span>
                   </div>
-                </div>
-              ))
-            )}
-          </div>
+                )
+              })}
+              {Object.keys(run.recurringEncounters).length === 0 && (
+                <div className="recurring-char not-cracked">No recurring characters encountered.</div>
+              )}
+            </div>
+          )}
 
-          <div className="ending-section">
-            <div className="ending-section-title">YOUR RECURRING CHARACTERS</div>
-            {Object.entries(run.recurringEncounters).map(([id, count]) => {
-              const rc = content.recurring.find(r => r.character_id === id)
-              if (!rc) return null
-              const cracked = count >= 2
-              return (
-                <div key={id} className="recurring-char">
-                  <span className={cracked ? 'cracked' : 'not-cracked'}>
-                    {rc.name} — {rc.reception_language} — {cracked ? 'CRACKED' : `${count} encounter${count > 1 ? 's' : ''}`}
-                  </span>
-                </div>
-              )
-            })}
-            {Object.keys(run.recurringEncounters).length === 0 && (
-              <div className="recurring-char not-cracked">No recurring characters encountered.</div>
-            )}
-          </div>
-
-          {variant && variant.bridge && (
-            <div className="ending-section">
+          {showBridge && variant && variant.bridge && (
+            <div className="ending-section win-fade">
               <div className="ending-section-title">THE BRIDGE</div>
               {variant.bridge.lines && variant.bridge.lines.map((line, i) => (
                 <div key={i} className="bridge-text">{line}</div>
@@ -693,9 +744,11 @@ export default function App() {
             </div>
           )}
 
-          <button className="play-again-btn" onClick={() => startRun()}>
-            &gt; play again
-          </button>
+          {showBridge && (
+            <button className={`play-again-btn ${won ? 'win-fade' : ''}`} onClick={() => startRun()}>
+              &gt; play again
+            </button>
+          )}
         </div>
       </div>
     )
@@ -755,7 +808,7 @@ export default function App() {
         )}
 
         {/* AWG token activation */}
-        {dialogueNode.awg && !showAWG && (
+        {dialogueNode.awg && !showAWG && !awgScanning && (
           <button
             className="awg-activate-btn"
             onClick={activateAWG}
@@ -765,7 +818,18 @@ export default function App() {
           </button>
         )}
 
-        {showAWG && dialogueNode.awg && <AWGDisplay awg={dialogueNode.awg} />}
+        {awgScanning && (
+          <div className="awg-scan">
+            <span className="awg-scan-label">SCANNING</span>
+            <span className="awg-scan-dots">{'.'.repeat(awgScanDots)}</span>
+          </div>
+        )}
+
+        {showAWG && dialogueNode.awg && (
+          <div className="awg-reveal">
+            <AWGDisplay awg={dialogueNode.awg} />
+          </div>
+        )}
 
         {showEmailGate && (
           <EmailGate
