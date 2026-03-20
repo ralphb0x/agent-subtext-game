@@ -590,3 +590,43 @@ html, body, #root {
     height: auto;
   }
 }
+
+/* ─── Intel System ──────────────────────────────────────────── */
+.intel-found {
+  border: 1px solid #FFB300;
+  background: #1A0F00;
+  padding: 12px 16px;
+  margin-top: 12px;
+}
+
+.intel-label {
+  color: #FFB300;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 2px;
+  margin-bottom: 4px;
+}
+
+.intel-name {
+  color: #FFB300;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.intel-desc {
+  color: #CCAA66;
+  font-size: 12px;
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+
+.intel-flavor {
+  color: #776622;
+  font-style: italic;
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.intel-count {
+  color: #FFB300;
+}

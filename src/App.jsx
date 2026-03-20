@@ -237,8 +237,26 @@ function assembleRun(content, seed) {
     const eventCount = 2 + Math.floor(rng() * 2)
     const events = shuffle(rng, loc.events).slice(0, eventCount)
 
+    // For discovery events, assign intel items from this location
+    const locationIntel = shuffle(rng, content.intel.intel_items.filter(
+      item => item.location_found === locId
+    ))
+    let intelIdx = 0
+    const discoveryEvents = events.filter(e => e.category === 'discovery').map(event => {
+      const intel = intelIdx < locationIntel.length ? locationIntel[intelIdx++] : null
+      return { ...event, attachedIntel: intel }
+    })
+    // Replace discovery events in the events list with intel-attached versions
+    const eventsWithIntel = events.map(e => {
+      if (e.category === 'discovery') {
+        const match = discoveryEvents.find(d => d.event_id === e.event_id)
+        return match || e
+      }
+      return e
+    })
+
     // For encounter events, assign NPCs
-    const encounters = events.filter(e => e.category === 'encounter').map(event => {
+    const encounters = eventsWithIntel.filter(e => e.category === 'encounter').map(event => {
       const pool = event.npc_archetype_pool || []
       const archetype = pool.length > 0 ? pick(rng, pool) : null
       const matchingNpcs = content.npcs.filter(n =>
@@ -262,10 +280,10 @@ function assembleRun(content, seed) {
 
     return {
       location: loc,
-      events,
+      events: eventsWithIntel,
       encounters,
       recurringChar: recurringChar || null,
-      nonEncounterEvents: events.filter(e => e.category !== 'encounter'),
+      nonEncounterEvents: eventsWithIntel.filter(e => e.category !== 'encounter'),
     }
   }).filter(Boolean)
 
@@ -467,8 +485,19 @@ export default function App() {
       if (npc && npc.dialogue_tree && npc.dialogue_tree.length > 0) {
         setCurrentNPC(npc)
         setDialogueNode(npc.dialogue_tree[0])
-        setRapport(0)
-        setSuspicion(0)
+        // Apply intel synergy as starting rapport/suspicion
+        let startRapport = 0, startSuspicion = 0
+        if (run.intelCollected.length > 0 && npc.archetype_id) {
+          for (const intel of run.intelCollected) {
+            const effect = intel.effects?.[npc.archetype_id]
+            if (effect) {
+              startRapport += effect.rapport_delta || 0
+              startSuspicion += effect.suspicion_delta || 0
+            }
+          }
+        }
+        setRapport(startRapport)
+        setSuspicion(startSuspicion)
         setShowAWG(false)
         setPhase(PHASE.DIALOGUE)
         return
@@ -659,17 +688,22 @@ export default function App() {
 
     // Apply resource effects
     const effects = currentEvent.resource_effects || {}
-    setRun(prev => ({
-      ...prev,
-      currentEventIdx: prev.currentEventIdx + 1,
+    const updates = {
+      currentEventIdx: run.currentEventIdx + 1,
       resources: {
-        money: prev.resources.money + (effects.money || 0),
-        daysLeft: Math.max(0, prev.resources.daysLeft + (effects.time || 0)),
-        heat: Math.min(10, Math.max(0, prev.resources.heat + (effects.heat || 0))),
-        energy: Math.min(10, Math.max(0, prev.resources.energy + (effects.energy || 0))),
+        money: run.resources.money + (effects.money || 0),
+        daysLeft: Math.max(0, run.resources.daysLeft + (effects.time || 0)),
+        heat: Math.min(10, Math.max(0, run.resources.heat + (effects.heat || 0))),
+        energy: Math.min(10, Math.max(0, run.resources.energy + (effects.energy || 0))),
       }
-    }))
+    }
 
+    // Collect intel from discovery events
+    if (currentEvent.attachedIntel && !run.intelCollected.some(i => i.intel_id === currentEvent.attachedIntel.intel_id)) {
+      updates.intelCollected = [...run.intelCollected, currentEvent.attachedIntel]
+    }
+
+    setRun(prev => ({ ...prev, ...updates, intelCollected: updates.intelCollected || prev.intelCollected }))
     setCurrentEvent(null)
     setPhase(PHASE.PLAYING)
   }, [currentEvent, run])
@@ -702,7 +736,7 @@ export default function App() {
       return false
     }
     if (option.requires_intel) {
-      return run.intelCollected.some(i => i.id === option.requires_intel)
+      return run.intelCollected.some(i => i.intel_id === option.requires_intel || i.unlocks_option_tag === option.requires_intel)
     }
     return true
   }, [run])
@@ -772,6 +806,7 @@ export default function App() {
       <span className="stat">{run.resources.daysLeft} DAYS</span>
       <span className="stat">HEAT:<HeatBar value={run.resources.heat} /></span>
       <span className="stat">ENERGY:<EnergyBar value={run.resources.energy} /></span>
+      {run.intelCollected.length > 0 && <span className="stat intel-count">INTEL:{run.intelCollected.length}</span>}
       <span className="token-count">[AWG:{run.awgTokens}]</span>
     </div>
   )
@@ -893,6 +928,19 @@ export default function App() {
           <div className="event-desc">{currentEvent.description}</div>
           {currentEvent.narrator_line && (
             <div className="narrator-line">{currentEvent.narrator_line}</div>
+          )}
+          {currentEvent.attachedIntel && (
+            <div className="intel-found">
+              <div className="intel-label">INTEL FOUND</div>
+              <div className="intel-name">{currentEvent.attachedIntel.name}</div>
+              <div className="intel-desc">{currentEvent.attachedIntel.description}</div>
+              {currentEvent.attachedIntel.narrator_line && (
+                <div className="narrator-line">{currentEvent.attachedIntel.narrator_line}</div>
+              )}
+              {currentEvent.attachedIntel.flavor && (
+                <div className="intel-flavor">{currentEvent.attachedIntel.flavor}</div>
+              )}
+            </div>
           )}
           {currentEvent.resource_effects && (
             <div style={{ color: '#888', fontSize: 12, marginTop: 8 }}>
