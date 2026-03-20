@@ -550,6 +550,30 @@ export default function App() {
     return () => window.removeEventListener('keydown', handler)
   }, [phase, content, startRun])
 
+  // Key handler for dialogue options (1-4) and AWG activation (A)
+  useEffect(() => {
+    if (phase !== PHASE.DIALOGUE || !dialogueNode || !currentNPC) return
+    const handler = (e) => {
+      const key = e.key
+      // Number keys 1-4 select dialogue options
+      if (key >= '1' && key <= '4') {
+        const idx = parseInt(key) - 1
+        const options = dialogueNode.options || []
+        if (idx < options.length && isOptionAvailable(options[idx])) {
+          selectOption(options[idx])
+        }
+      }
+      // 'a' or 'A' activates AWG token
+      if (key === 'a' || key === 'A') {
+        if (!showAWG && !awgScanning) {
+          activateAWG()
+        }
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [phase, dialogueNode, currentNPC, selectOption, activateAWG, isOptionAvailable, showAWG, awgScanning])
+
   // ─── Game logic ───────────────────────────────────────────
   const advanceEvent = useCallback(() => {
     if (!run) return
@@ -967,6 +991,26 @@ export default function App() {
       return () => timers.forEach(clearTimeout)
     }
   }, [phase, run])
+
+  // Key handler for continue buttons (Enter/Space) in event, debrief, location screens
+  useEffect(() => {
+    if (phase === PHASE.DIALOGUE || phase === PHASE.BOOT || phase === PHASE.ENDING) return
+    const handler = (e) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return
+      if (e.key === ' ') e.preventDefault()
+
+      if (phase === PHASE.EVENT && currentEvent) {
+        handleEventContinue()
+      } else if (phase === PHASE.DEBRIEF && debriefData) {
+        setDebriefData(null)
+        setPhase(PHASE.PLAYING)
+      } else if (phase === PHASE.PLAYING && run && run.showingLocation) {
+        setRun(prev => ({ ...prev, showingLocation: false }))
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [phase, currentEvent, debriefData, run, handleEventContinue])
 
   // ─── Render ───────────────────────────────────────────────
 
