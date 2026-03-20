@@ -314,14 +314,39 @@ const RECURRING_PORTRAITS = {
   ],
 }
 
+// Flavor modifications — procedurally modify portrait based on NPC flavor variables
+const FLAVOR_MODS = {
+  hat: { line: 1, replacements: { '≡≡≡≡≡': '▓HAT▓', 'zzzzz': '▓HAT▓', '.....': '▓HAT▓', '~~~~~': '▓HAT▓', '░░░░░': '▓HAT▓', '★★★★★': '▓HAT▓', '$$$$$': '▓HAT▓' } },
+  glasses: { line: 4, replacements: { '◉': '⊙', '●': '⊙', '◆': '⊙', '◠': '⊙', '·': '⊙', '─': '⊙', '▬': '⊙', '◎': '⊙', '■': '⊙' } },
+  scar: { line: 5, append: '/' },
+  beard: { line: 7, replacements: { '───┘': '╥╥╥┘', '───': '╥╥╥', '╰╯': '╥╥╥', '~~~': '╥╥╥' } },
+}
+
+function applyFlavor(lines, flavor) {
+  if (!flavor || !lines) return lines
+  const result = [...lines]
+  for (const [key, mod] of Object.entries(FLAVOR_MODS)) {
+    if (!flavor[key]) continue
+    if (mod.replacements && mod.line < result.length) {
+      let line = result[mod.line]
+      for (const [from, to] of Object.entries(mod.replacements)) {
+        line = line.replace(from, to)
+      }
+      result[mod.line] = line
+    }
+  }
+  return result
+}
+
 /**
  * Get ASCII portrait for an NPC by archetype ID
  * @param {string} archetypeId - The archetype ID
- * @param {object} [flavor] - Optional flavor modifiers (not yet implemented)
+ * @param {object} [flavor] - Optional flavor modifiers { hat, glasses, scar, beard }
  * @returns {string[]} Array of portrait lines
  */
 export function getPortrait(archetypeId, flavor) {
-  return BASE_PORTRAITS[archetypeId] || BASE_PORTRAITS['suspicious']
+  const base = BASE_PORTRAITS[archetypeId] || BASE_PORTRAITS['suspicious']
+  return applyFlavor(base, flavor)
 }
 
 /**

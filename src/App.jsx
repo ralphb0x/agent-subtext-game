@@ -164,7 +164,21 @@ function ShareCard({ run, won }) {
     line(run.character.name, '#FFFFFF', 18)
     line(`${run.character.origin_city}, ${run.character.origin_country}  //  ${run.character.occupation}`, '#888')
 
-    y += 12
+    y += 8
+
+    // ASCII portrait (rendered on right side of card)
+    const lastNPC = run.stops[run.currentStopIdx]?.npcs?.[0]
+    const portraitArchetype = lastNPC?.archetype_id || 'suspicious'
+    const portraitLines = getPortrait(portraitArchetype)
+    if (portraitLines) {
+      ctx.font = '10px "IBM Plex Mono", monospace'
+      ctx.fillStyle = '#555'
+      portraitLines.forEach((pl, i) => {
+        ctx.fillText(pl, W - 260, 40 + i * 12)
+      })
+      ctx.fillStyle = '#FFFFFF'
+      ctx.font = '14px "IBM Plex Mono", monospace'
+    }
 
     // Status
     if (won) {
@@ -827,14 +841,26 @@ export default function App() {
     }, 100)
   }, [run, emailSubmitted, awgScanning])
 
-  // Email submit
+  // Email submit — sends to AWG CRM endpoint
   const handleEmailSubmit = useCallback((email) => {
-    // In production, this would POST to AWG CRM
-    console.log('Email captured:', email)
+    const CRM_ENDPOINT = 'https://arewegood.com/api/leads'
+    fetch(CRM_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email,
+        source: 'subtext_game',
+        character: run?.character?.name,
+        gaps_missed: run?.gapsMissed?.map(g => g.category) || [],
+        timestamp: new Date().toISOString(),
+      }),
+    }).catch(() => {
+      // Silently fail — tokens are granted regardless
+    })
     setEmailSubmitted(true)
     setShowEmailGate(false)
     setRun(prev => ({ ...prev, awgTokens: prev.awgTokens + 3 }))
-  }, [])
+  }, [run])
 
   // Handle event continue
   const handleEventContinue = useCallback(() => {
