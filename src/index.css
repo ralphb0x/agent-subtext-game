@@ -56,29 +56,17 @@ html, body, #root {
 }
 
 .boot-line {
-  opacity: 0;
-  animation: fadeIn 0.8s forwards;
   margin-bottom: 1.5em;
   max-width: 400px;
+  min-height: 2.4em;
 }
 
-.boot-line:nth-child(1) { animation-delay: 0.5s; }
-.boot-line:nth-child(2) { animation-delay: 2.5s; }
-.boot-line:nth-child(3) { animation-delay: 4.5s; }
-.boot-line:nth-child(4) { animation-delay: 6.5s; }
-
 .boot-title {
-  opacity: 0;
-  animation: fadeIn 0.8s forwards;
-  animation-delay: 9s;
   margin-top: 2em;
   color: var(--dim);
 }
 
 .boot-prompt {
-  opacity: 0;
-  animation: blink 1s step-end infinite;
-  animation-delay: 10s;
   margin-top: 2em;
   color: var(--dim);
   font-size: 12px;

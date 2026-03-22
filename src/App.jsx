@@ -1026,23 +1026,30 @@ export default function App() {
 
   // Boot screen
   if (phase === PHASE.BOOT) {
+    const bootLines = [
+      "Your mom needs to be asked twice\nbefore she'll say what's wrong.",
+      "Your boss needs solutions before context\nor he stops reading.",
+      "Your best friend needs humor before vulnerability\nor she deflects.",
+      "Your partner needs acknowledgment before advice\nor he shuts down."
+    ]
+    // Each line takes ~3s to type. Stagger by 3.5s to allow a pause between.
+    const lineDelay = 3500
+    const titleDelay = bootLines.length * lineDelay + 500
+    const promptDelay = titleDelay + 1200
     return (
       <div className="game-container" onClick={handleBootClick}>
         <div className="boot-screen">
-          <div className="boot-line">
-            Your mom needs to be asked twice<br />before she'll say what's wrong.
+          {bootLines.map((line, i) => (
+            <div className="boot-line" key={i}>
+              <TypewriterText text={line} delay={i * lineDelay} charSpeed={50} punctPause={300} />
+            </div>
+          ))}
+          <div className="boot-title">
+            <TypewriterText text="subtext.game" delay={titleDelay} charSpeed={80} punctPause={0} />
           </div>
-          <div className="boot-line">
-            Your boss needs solutions before context<br />or he stops reading.
+          <div className="boot-prompt">
+            <TypewriterText text="> press any key" delay={promptDelay} charSpeed={60} punctPause={0} />
           </div>
-          <div className="boot-line">
-            Your best friend needs humor before vulnerability<br />or she deflects.
-          </div>
-          <div className="boot-line">
-            Your partner needs acknowledgment before advice<br />or he shuts down.
-          </div>
-          <div className="boot-title">subtext.game</div>
-          <div className="boot-prompt">&gt; press any key</div>
         </div>
       </div>
     )
