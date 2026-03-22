@@ -364,6 +364,7 @@ function assembleRun(content, seed) {
     conversationsWithoutToken: 0,
     secretsFound: [],
     showingLocation: true,
+    deportGlitchUsed: false,
   }
 }
 
@@ -558,7 +559,7 @@ export default function App() {
       // Number keys 1-4 select dialogue options
       if (key >= '1' && key <= '4') {
         const idx = parseInt(key) - 1
-        const options = dialogueNode.options || []
+        const options = (dialogueNode.options || []).slice(0, 4)
         if (idx < options.length && isOptionAvailable(options[idx])) {
           selectOption(options[idx])
         }
@@ -676,16 +677,22 @@ export default function App() {
 
     // Check for time deportation
     if (newDaysLeft <= 0) {
+      const useGlitch = !run.deportGlitchUsed
       setRun(prev => ({
         ...prev,
         currentStopIdx: nextStopIdx,
         resources: { ...prev.resources, daysLeft: 0 },
+        deportGlitchUsed: true,
       }))
-      setDeportGlitch(true)
-      setTimeout(() => {
-        setDeportGlitch(false)
+      if (useGlitch) {
+        setDeportGlitch(true)
+        setTimeout(() => {
+          setDeportGlitch(false)
+          setPhase(PHASE.ENDING)
+        }, 500)
+      } else {
         setPhase(PHASE.ENDING)
-      }, 500)
+      }
       return
     }
 
@@ -698,6 +705,7 @@ export default function App() {
       resources: {
         ...prev.resources,
         daysLeft: newDaysLeft,
+        energy: Math.min(10, prev.resources.energy + 3), // Rest between locations
       },
     }))
   }, [run])
@@ -718,9 +726,10 @@ export default function App() {
     setRapport(newRapport)
     setSuspicion(newSuspicion)
 
-    // Update run resources
+    // Update run resources — each dialogue choice costs 1 energy
     const heatDelta = option.suspicion_delta > 0 ? option.suspicion_delta : 0
     const newHeat = Math.min(10, run.resources.heat + heatDelta)
+    const newEnergy = Math.max(0, run.resources.energy - 1)
 
     // Trigger heat bar flash animation when heat rises
     if (heatDelta > 0) {
@@ -733,16 +742,23 @@ export default function App() {
       resources: {
         ...prev.resources,
         heat: newHeat,
+        energy: newEnergy,
       }
     }))
 
     // Check for deportation (Heat 10 or Time 0)
     if (newHeat >= 10 || run.resources.daysLeft <= 0) {
-      setDeportGlitch(true)
-      setTimeout(() => {
-        setDeportGlitch(false)
+      const useGlitch = !run.deportGlitchUsed
+      setRun(prev => ({ ...prev, deportGlitchUsed: true }))
+      if (useGlitch) {
+        setDeportGlitch(true)
+        setTimeout(() => {
+          setDeportGlitch(false)
+          setPhase(PHASE.ENDING)
+        }, 500)
+      } else {
         setPhase(PHASE.ENDING)
-      }, 500)
+      }
       return
     }
 
@@ -933,11 +949,17 @@ export default function App() {
 
     // Check for deportation from event effects (heat 10 or time 0)
     if (newHeatFromEvent >= 10 || newDaysLeft <= 0) {
-      setDeportGlitch(true)
-      setTimeout(() => {
-        setDeportGlitch(false)
+      const useGlitch = !run.deportGlitchUsed
+      setRun(prev => ({ ...prev, deportGlitchUsed: true }))
+      if (useGlitch) {
+        setDeportGlitch(true)
+        setTimeout(() => {
+          setDeportGlitch(false)
+          setPhase(PHASE.ENDING)
+        }, 500)
+      } else {
         setPhase(PHASE.ENDING)
-      }, 500)
+      }
       return
     }
 
@@ -1306,7 +1328,7 @@ export default function App() {
 
   // Dialogue screen
   if (phase === PHASE.DIALOGUE && dialogueNode && currentNPC) {
-    const options = dialogueNode.options || []
+    const options = (dialogueNode.options || []).slice(0, 4)
     return (
       <div className="game-container">
         <UIBar />
