@@ -1308,7 +1308,7 @@ export default function App() {
         <div className="npc-section">
           <Portrait
             archetypeId={currentNPC.archetype_id}
-            recurringId={currentNPC.character_id}
+            recurringId={currentNPC.isRecurring ? currentNPC.npc_id : undefined}
           />
           <div className="npc-info">
             <div className="npc-name">{currentNPC.name}</div>
