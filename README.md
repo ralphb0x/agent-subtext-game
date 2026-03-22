@@ -20,7 +20,7 @@ Open [http://localhost:5173](http://localhost:5173). Press any key past the open
 
 ## How the Game Works
 
-You pick a migrant character (from 100,000 precomputed profiles) and travel through 5 locations from your origin to Coney Island, NYC. At each stop you encounter NPCs. Every NPC has an archetype (Lonely, Paranoid, Greedy, etc.) that determines what they actually want beneath what they say.
+You pick a migrant character (from 1,000 precomputed profiles) and travel through 5 locations from your origin to Coney Island, NYC. At each stop you encounter NPCs. Every NPC has an archetype (Lonely, Paranoid, Greedy, etc.) that determines what they actually want beneath what they say.
 
 Pick the right dialogue option and you build rapport, get help, save money, avoid suspicion. Pick wrong and your Heat rises. Hit Heat 10 or run out of days and you're deported.
 
@@ -44,7 +44,7 @@ src/
   main.jsx         # React entry point
 
 content/           # All precomputed JSON — zero runtime API calls
-  characters.json  # 100,000 player profiles
+  characters.json  # 1,000 player profiles
   archetypes.json  # 12 NPC archetype definitions
   npcs.json        # 120 NPC instances with full dialogue trees + AWG analysis
   locations.json   # 5 location packs with events and ASCII headers
